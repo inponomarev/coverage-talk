@@ -1,0 +1,403 @@
+= Beyond %: a practical guide to coverage metrics (and when to ignore them)
+Ivan Ponomarev
+:revealjs_theme: black
+:revealjs_customtheme: white_course.css
+:revealjs_slideNumber:
+:revealjs_history:
+:revealjs_progress:
+:encoding: UTF-8
+:lang: ru
+include::_doc_general_attributes.adoc[]
+:doctype: article
+:toclevels: 3
+:imagesdir: images
+:source-highlighter: highlightjs
+:highlightjsdir: highlight
+:icons: font
+:iconfont-remote!:
+:iconfont-name: font-awesome-4.7.0/css/font-awesome
+:revealjs_mouseWheel: true
+:revealjs_center: false
+:revealjs_transition: none
+:revealjs_width: 1600
+:revealjs_height: 900
+:stem: latexmath
+
+
+//== Часть 1. Введение
+:!figure-caption:
+
+[%notitle]
+== Who am I
+
+[cols="30a,70a"]
+|===
+|image::ivan.jpg[]
+|
+
+Ivan Ponomarev
+
+* Team Lead at Synthesized.io (test data automation you can trust!)
+* Teaching CS and programming at universities
+* 
+|===
+
+
+== The magical “coverage” metric
+- “What’s the test/code coverage in your project?”
+- “We have very high, 80%..90% test coverage”
+- “We need to improve coverage!”
+- “Can you give us 100% test coverage?”
+
+== The magical “coverage” metric
+- “What’s the test/code coverage in your project?”
+- “We have very high, 80%..90% test coverage”
+- “We need to improve coverage!”
+- “Can you give us *100%* test coverage?”
+
+CAUTION: Because coverage is measured in %, it’s tempting
+to speculate about 100% as an “ideal goal”
+
+== Method under test: IsLeapYear
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml, leapyear, png]
+----
+@startuml
+start
+
+:result = false;
+
+if (year % 4 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes)
+      :result = true;
+    else (no)
+      
+    endif
+  else (no)
+    :result = true;
+  endif
+else (no)
+  
+endif
+
+:return result;
+
+stop
+@enduml
+----
+|
+
+Q: How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation) 
+[.fragment]
+A: Four: 
+
+* 2026 (non-divisible by 4)
+* 2028 (divisible by 4, not centennial)
+* 2100 (centennial, but not divisible by 400)
+* 2000 (centennial, divisible by 400)
+
+|===
+
+
+
+== Method under test: IsLeapYear
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml, leapyear, png]
+----
+@startuml
+start
+
+:result = false;
+
+if (year % 4 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes)
+      :result = true;
+    else (no)
+      
+    endif
+  else (no)
+    :result = true;
+  endif
+else (no)
+  
+endif
+
+:return result;
+
+stop
+@enduml
+----
+
+|
+
+* *Number of branches* number of
+execution paths needed to cover all the
+edges: 4
+
+* *Number of paths* number of all possible
+execution paths: 4
+
+* *Cyclomatic complexity* +
+CC = E - N + 2 = 14 - 12 + 2 = 4
+
+
+All of them are 4, but it's just a coincidence!
+
+|===
+
+
+== Adding extra statements to a branch does not contribute to CC…
+
+
+[cols="15a,15a,15a,55a"]
+|===
+|
+[plantuml, a, png]
+----
+@startuml
+start
+:A;
+stop
+@enduml
+----
+|
+
+[plantuml, ab, png]
+----
+@startuml
+start
+:A;
+:B;
+stop
+@enduml
+----
+
+|
+
+[plantuml, abc, png]
+----
+@startuml
+start
+:A;
+:B;
+:C;
+stop
+@enduml
+----
+|
+
+For a chain of statements without
+any decision points, CC = 1 no matter how long is the chain!!
+
+
+E - N + 2 = 2-3+2 = 3-4+2= 4-5+2 = 1
+  
+(we add +1 edge and +1 node)
+
+|===
+ 
+== …Adding “decision points” do contribute
+
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,twoifs,png]
+----
+@startuml
+start
+if (condition1) then (true)
+:A;
+else (false)
+:B;
+endif
+
+if (condition2) then (true)
+:C;
+else (false)
+:D;
+endif
+
+stop
+@enduml
+----
+
+|
+`if`, `while`, `for`, `switch` case, also all the
+boolean expressions with short-cutting (`&&`,
+`\|\|`) will add +1 to CC
+
+CC = E-N+2=11-10+2 = 3
+
+Mathematical facts: CC is
+
+* the upper bound for number of “branches” (2 in this case: AC, BD or AD, BC)
+* the lower bound for number of “paths” (4 in this case: AC, AD, BC, BD)
+
+|===
+
+
+
+
+== UK personal income tax calculator
+
+[plantuml,uktax,png]
+----
+@startuml
+start
+
+:tax = 0;
+:personalAllowance = 12570;
+
+if (adjustedNetIncome > 100000?) then (yes)
+  :reduction = (adjustedNetIncome - 100000) / 2;
+  :personalAllowance = max(0, 12570 - reduction);
+else (no)
+
+endif
+
+:taxableIncome = max(0, grossIncome - personalAllowance);
+
+if (taxableIncome <= 37700?) then (yes)
+  :tax = taxableIncome * 0.20;
+else (no)
+  :tax = 37700 * 0.20;
+  :remaining = taxableIncome - 37700;
+
+  if (taxableIncome <= 125140?) then (yes)
+    :tax = tax + remaining * 0.40;
+  else (no)
+    :tax = tax + (125140 - 37700) * 0.40;
+    :additionalPart = taxableIncome - 125140;
+    :tax = tax + additionalPart * 0.45;
+  endif
+endif
+
+:return tax;
+
+stop
+@enduml
+----
+
+== Estonian personal tax calculator
+
+== Cyclomatic Complexity metric
+
+* Introduced by Thomas J. McCabe in 1976.
+* It’s very easy to calculate for every programming language (only very basic lexical/syntax analysis is needed). On the other hand, estimation of actual possible paths of execution involves analysis of “possible” and “impossible”
+paths.
+* It’s additive (we can calculate CC for a whole project).
+* It’s “roughly the number of unit tests needed” (but tests must cover different paths)
+
+== What is an acceptable value for CC?
+* MCabe’s categorization of CC of a single procedure (1976 paper->Wikipedia):
+** 1 - 10: Simple procedure, little risk
+** 11 - 20: More complex, moderate risk
+** 21 - 50: Complex, high risk
+** > 50: Untestable code, very high risk
+
+* My own categorization (Ivan Ponomarev, 2026):
+** 1 - 15 OK
+** > 15 mess, if it's not generated code -- refactor 
+
+
+== Code coverage is just a uni-dimensional projection +++<br/>+++of multidimensional picture
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-01.svg[{image-80-width}]
+|
+image::coverage-plot-01.svg[{image-80-width}]
+
+|===
+
+== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-02.svg[{image-80-width}]
+|
+image::coverage-plot-02.svg[{image-80-width}]
+
+|===
+
+
+== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-03.svg[{image-80-width}]
+|
+image::coverage-plot-03.svg[{image-80-width}]
+
+|===
+
+== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-04.svg[{image-80-width}]
+|
+image::coverage-plot-04.svg[{image-80-width}]
+
+|===
+
+== Higher code coverage: percentages rise, +++<br/>+++but vast areas are untested
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-05.svg[{image-80-width}]
+|
+image::coverage-plot-05.svg[{image-80-width}]
+
+|===
+
+
+== Higher code coverage: percentages rise, +++<br/>+++but vast areas are untested
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-06.svg[{image-80-width}]
+|
+image::coverage-plot-06.svg[{image-80-width}]
+
+|===
+
+== When code coverage is high, adding new valuable tests +++<br/>+++does not contribute to the metric
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-07.svg[{image-80-width}]
+|
+image::coverage-plot-07.svg[{image-80-width}]
+
+|===
+
+== Artificial 100% coverage: difficult to achieve, +++<br/>+++but not related to quality
+
+image::coverage-08.svg[{image-40-width}]
+
+== Thanks for listening!
+
+Slides-as-code: https://github.com/inponomarev/dsl-antora-talk
+
+icon:envelope[size=lg] ivan@synthesized.io
+
+icon:twitter[size=lg] @inponomarev
