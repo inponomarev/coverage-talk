@@ -19,7 +19,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <asciidoctor.maven.plugin.version>3.2.0</asciidoctor.maven.plugin.version>
         <asciidoctorj.version>2.5.12</asciidoctorj.version>
-        <asciidoctorj.diagram.version>2.3.2</asciidoctorj.diagram.version>
+        <asciidoctorj.diagram.version>3.2.1</asciidoctorj.diagram.version>
         <jruby.version>9.4.6.0</jruby.version>
         <revealjs.version>3.9.2</revealjs.version>
         <!-- Use 'master' as version and remove the 'v' prefixing the download url to use the current snapshot version  -->
@@ -155,6 +155,11 @@
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctorj-diagram</artifactId>
                         <version>${asciidoctorj.diagram.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctorj-diagram-plantuml</artifactId>
+                        <version>1.2026.2</version>
                     </dependency>
                     <dependency>
                         <groupId>org.asciidoctor</groupId>

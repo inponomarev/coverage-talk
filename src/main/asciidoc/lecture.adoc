@@ -60,37 +60,81 @@ to speculate about 100% as an “ideal goal”
 
 == Method under test: IsLeapYear
 
+[source,java]
+----
+/**
+Returns {@code true} if {@code year} is a leap year.
+
+Every year that is exactly divisible by four
+is a leap year, except for years that are exactly
+divisible by 100, but these centurial years are
+leap years if they are exactly divisible by 400.
+*/
+boolean isLeapYear(int year) { ... }
+----
+
+== Method under test: IsLeapYear
+
+
+
 [cols="50a,50a"]
 |===
-|
-
 [plantuml, leapyear, png]
 ----
 @startuml
-start
+!pragma useVerticalIf on
 
-:result = false;
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
 
 if (year % 4 == 0?) then (yes)
+  -[#1b5e20,bold]->
   if (year % 100 == 0?) then (yes)
+    -[#1b5e20,bold]->
     if (year % 400 == 0?) then (yes)
-      :result = true;
+      -[#1b5e20,bold]->
+      :result = true; <<#e8f5e9>>
+      -[#1b5e20,bold]->
     else (no)
-      
-    endif
-  else (no)
-    :result = true;
-  endif
-else (no)
-  
-endif
+      -[#b71c1c,dashed]->
 
-:return result;
+    endif
+    -[#1b5e20,bold]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#b71c1c,dashed]->
+
+endif
+-[#1b5e20,bold]->
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
 
 stop
 @enduml
 ----
+
 |
+
 
 Q: How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation) 
 [.fragment]
@@ -111,7 +155,7 @@ A: Four:
 |===
 |
 
-[plantuml, leapyear, png]
+[plantuml, leapyear2, png]
 ----
 @startuml
 start
