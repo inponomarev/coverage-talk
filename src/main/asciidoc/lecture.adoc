@@ -73,13 +73,144 @@ leap years if they are exactly divisible by 400.
 boolean isLeapYear(int year) { ... }
 ----
 
+
 == Method under test: IsLeapYear
-
-
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear, png]
+[plantuml, leapyear0, png]
+----
+@startuml
+!pragma useVerticalIf on
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+
+:result = false; <<#e8f5e9>>
+
+-[#b71c1c,dashed]->
+
+if (year % 4 == 0?) then (yes)
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes)
+    --[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes)
+      -[#b71c1c,dashed]->
+      :result = true; <<#e8f5e9>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+
+endif
+-[#b71c1c,dashed]->
+:return result; <<#e8f5e9>>
+
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+----
+
+|
+
+
+Q: How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation)
+[.fragment]
+A: Four:
+
+|===
+
+== IsLeapYear: Branch coverage 25%
+
+[cols="50a,50a"]
+|===
+[plantuml, leapyear1, png]
+----
+@startuml
+!pragma useVerticalIf on
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes)
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes)
+      -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes)
+      -[#b71c1c,dashed]->
+      :result = true; <<#e8f5e9>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+
+endif
+-[#1b5e20,bold]->
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+
+
+* 2026 (non-divisible by 4)
+
+|===
+
+
+== Method under test: IsLeapYear
+
+[cols="50a,50a"]
+|===
+[plantuml, leapyear99, png]
 ----
 @startuml
 !pragma useVerticalIf on

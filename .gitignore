@@ -23,3 +23,4 @@ src/main/asciidoc/*.png
 /src/main/asciidoc/images/diag-*.png
 /.jqwik-database
 *.bak
+/src/main/asciidoc/images/leapyear*.png
