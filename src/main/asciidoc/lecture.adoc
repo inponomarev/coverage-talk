@@ -211,7 +211,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear2, png]
+[plantuml, leapyear21, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -311,7 +311,7 @@ if (year % 4 == 0?) then (yes)
     else (no)
       -[#1b5e20,bold]->
     endif
-    -[#b71c1c,dashed]->
+    -[#1b5e20,bold]->
   else (no)
     -[#1b5e20,bold]->
     :result = true; <<#e8f5e9>>
