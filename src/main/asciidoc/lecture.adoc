@@ -96,17 +96,17 @@ skinparam activity {
 start
 -[#b71c1c,dashed]->
 
-:result = false; <<#e8f5e9>>
+:result = false; <<#fdecea>>
 
 -[#b71c1c,dashed]->
 
 if (year % 4 == 0?) then (yes)
   -[#b71c1c,dashed]->
   if (year % 100 == 0?) then (yes)
-    --[#b71c1c,dashed]->
+    -[#b71c1c,dashed]->
     if (year % 400 == 0?) then (yes)
       -[#b71c1c,dashed]->
-      :result = true; <<#e8f5e9>>
+      :result = true; <<#fdecea>>
       -[#b71c1c,dashed]->
     else (no)
       -[#b71c1c,dashed]->
@@ -124,7 +124,7 @@ else (no)
 
 endif
 -[#b71c1c,dashed]->
-:return result; <<#e8f5e9>>
+:return result; <<#fdecea>>
 
 -[#b71c1c,dashed]->
 
