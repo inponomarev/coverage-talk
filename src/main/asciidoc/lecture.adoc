@@ -211,7 +211,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear21, png]
+[plantuml, leapyear22, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -278,7 +278,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear3, png]
+[plantuml, leapyear31, png]
 ----
 @startuml
 !pragma useVerticalIf on
