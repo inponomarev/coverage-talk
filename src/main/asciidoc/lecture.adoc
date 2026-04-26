@@ -342,6 +342,75 @@ stop
 |===
 
 
+== IsLeapYear: Branch coverage 100%
+
+[cols="50a,50a"]
+|===
+[plantuml, leapyear4, png]
+----
+@startuml
+!pragma useVerticalIf on
+
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes)
+  -[#1b5e20,bold]->
+  if (year % 100 == 0?) then (yes)
+      -[#1b5e20,bold]->
+    if (year % 400 == 0?) then (yes)
+      -[#1b5e20,bold]->
+      :result = true; <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    else (no)
+      -[#1b5e20,bold]->
+    endif
+    -[#1b5e20,bold]->
+  else (no)
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+
+
+* 2026 (non-divisible by 4)
+* 2028 (divisible by 4, not centennial)
+* 2100 (centennial, but not divisible by 400)
+* 2000 (centennial, divisible by 400)
+
+|===
+
+
 == Method under test: IsLeapYear
 
 [cols="50a,50a"]
