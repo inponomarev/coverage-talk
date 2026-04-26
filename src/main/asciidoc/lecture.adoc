@@ -248,7 +248,7 @@ if (year % 4 == 0?) then (yes)
   else (no)
     -[#1b5e20,bold]->
     :result = true; <<#e8f5e9>>
-    -[#b71c1c,dashed]->
+    -[#1b5e20,bold]->
   endif
   -[#1b5e20,bold]->
 else (no)
