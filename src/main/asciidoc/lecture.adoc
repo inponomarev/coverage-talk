@@ -354,7 +354,7 @@ A: Four:
 |===
 |
 
-[plantuml, leapyear2, png]
+[plantuml, leapyear98, png]
 ----
 @startuml
 start
