@@ -78,7 +78,7 @@ boolean isLeapYear(int year) { ... }
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear0, png]
+[plantuml, leapyear05, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -100,11 +100,11 @@ start
 
 -[#b71c1c,dashed]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#fdecea>>
   -[#b71c1c,dashed]->
-  if (year % 100 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes) <<#fdecea>>
     -[#b71c1c,dashed]->
-    if (year % 400 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
       :result = true; <<#fdecea>>
       -[#b71c1c,dashed]->
@@ -135,9 +135,7 @@ stop
 |
 
 
-Q: How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation)
-[.fragment]
-A: Four:
+How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation)
 
 |===
 
@@ -145,7 +143,7 @@ A: Four:
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear1, png]
+[plantuml, leapyear15, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -167,11 +165,11 @@ start
 
 -[#1b5e20,bold]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#fff8b3>>
   -[#b71c1c,dashed]->
-  if (year % 100 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes)  <<#fdecea>>
       -[#b71c1c,dashed]->
-    if (year % 400 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
       :result = true; <<#fdecea>>
       -[#b71c1c,dashed]->
@@ -202,7 +200,7 @@ stop
 |
 
 
-* 2026 (non-divisible by 4)
+* 2026 (non-divisible by 4) -- `false`
 
 |===
 
@@ -211,7 +209,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear22, png]
+[plantuml, leapyear25, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -233,11 +231,11 @@ start
 
 -[#1b5e20,bold]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
-  if (year % 100 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes) <<#fff8b3>>
       -[#b71c1c,dashed]->
-    if (year % 400 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
       :result = true; <<#fdecea>>
       -[#b71c1c,dashed]->
@@ -268,8 +266,8 @@ stop
 |
 
 
-* 2026 (non-divisible by 4)
-* 2028 (divisible by 4, not centennial)
+* 2026 (non-divisible by 4) -- `false`
+* 2028 (divisible by 4, not centennial) -- `true`
 
 |===
 
@@ -278,7 +276,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear31, png]
+[plantuml, leapyear35, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -300,11 +298,11 @@ start
 
 -[#1b5e20,bold]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
-  if (year % 100 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
-    if (year % 400 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes) <<#fff8b3>>
       -[#b71c1c,dashed]->
       :result = true; <<#fdecea>>
       -[#b71c1c,dashed]->
@@ -335,9 +333,9 @@ stop
 |
 
 
-* 2026 (non-divisible by 4)
-* 2028 (divisible by 4, not centennial)
-* 2100 (centennial, but not divisible by 400)
+* 2026 (non-divisible by 4) -- `false`
+* 2028 (divisible by 4, not centennial) -- `true`
+* 2100 (centennial, but not divisible by 400) -- `false`
 
 |===
 
@@ -346,7 +344,7 @@ stop
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear4, png]
+[plantuml, leapyear45, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -368,11 +366,11 @@ start
 
 -[#1b5e20,bold]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
-  if (year % 100 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
-    if (year % 400 == 0?) then (yes)
+    if (year % 400 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
       :result = true; <<#e8f5e9>>
       -[#1b5e20,bold]->
@@ -403,19 +401,24 @@ stop
 |
 
 
-* 2026 (non-divisible by 4)
-* 2028 (divisible by 4, not centennial)
-* 2100 (centennial, but not divisible by 400)
-* 2000 (centennial, divisible by 400)
+* 2026 (non-divisible by 4) -- `false`
+* 2028 (divisible by 4, not centennial) -- `true`
+* 2100 (centennial, but not divisible by 400) -- `false`
+* 2000 (centennial, divisible by 400) -- `true`
 
 |===
+
+
+
 
 
 == Method under test: IsLeapYear
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear99, png]
+|
+
+[plantuml, leapyear95, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -437,82 +440,33 @@ start
 
 -[#1b5e20,bold]->
 
-if (year % 4 == 0?) then (yes)
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
-  if (year % 100 == 0?) then (yes)
-    -[#1b5e20,bold]->
-    if (year % 400 == 0?) then (yes)
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    if (year % 400 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
       :result = true; <<#e8f5e9>>
       -[#1b5e20,bold]->
     else (no)
-      -[#b71c1c,dashed]->
-
+      -[#1b5e20,bold]->
     endif
     -[#1b5e20,bold]->
   else (no)
-    -[#b71c1c,dashed]->
-    :result = true; <<#fdecea>>
-    -[#b71c1c,dashed]->
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
   endif
   -[#1b5e20,bold]->
 else (no)
-  -[#b71c1c,dashed]->
+  -[#1b5e20,bold]->
 
 endif
 -[#1b5e20,bold]->
+
 :return result; <<#e8f5e9>>
 
 -[#1b5e20,bold]->
-
-stop
-@enduml
-----
-
-|
-
-
-Q: How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation) 
-[.fragment]
-A: Four: 
-
-* 2026 (non-divisible by 4)
-* 2028 (divisible by 4, not centennial)
-* 2100 (centennial, but not divisible by 400)
-* 2000 (centennial, divisible by 400)
-
-|===
-
-
-
-== Method under test: IsLeapYear
-
-[cols="50a,50a"]
-|===
-|
-
-[plantuml, leapyear98, png]
-----
-@startuml
-start
-
-:result = false;
-
-if (year % 4 == 0?) then (yes)
-  if (year % 100 == 0?) then (yes)
-    if (year % 400 == 0?) then (yes)
-      :result = true;
-    else (no)
-      
-    endif
-  else (no)
-    :result = true;
-  endif
-else (no)
-  
-endif
-
-:return result;
 
 stop
 @enduml
