@@ -22,7 +22,7 @@ include::_doc_general_attributes.adoc[]
 :revealjs_width: 1600
 :revealjs_height: 900
 :stem: latexmath
-
+:customcss: coverage.css
 
 //== Часть 1. Введение
 :!figure-caption:
@@ -58,7 +58,99 @@ Ivan Ponomarev
 CAUTION: Because coverage is measured in %, it’s tempting
 to speculate about 100% as an “ideal goal”
 
-== Method under test: IsLeapYear
+== Line coverage (C0)
+
+[source,java]
+----
+assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
+----
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅if (x > y)
+✅   return x;
+⛔else
+⛔   return x;
+----
+|
+* ✅ Covered: 2
+* ⛔ Uncovered: 2
+* Line coverage: *50%*
+|===
+
+
+== Line coverage
+
+[source,java]
+----
+assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
+----
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅if (x > y) {
+✅   return
+✅          this
+✅          .
+✅          x;
+⛔} else { return x;}
+----
+|
+* ✅ Covered: 5
+* ⛔ Uncovered: 1
+* Line coverage: *83%*
+|===
+
+== Instruction Coverage (e. g. in JaCoCo)
+
+Instruction coverage provides information about the amount of code that has been executed or missed.
+
+image::jacoco-instructions-2.png[]
+
+image::jacoco-instructions-1.png[]
+
+* Independent of source formatting
+* Always available, even in absence of debug information/source code.
+
+== And yet!
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅logger.info("Calculating maxComponent2 for ({}, {})", x, y);
+  if (x > y) {
+✅    logger.info("x > y, so the maximum is x!");
+✅    System.gc(); // because why not
+✅    ohByTheWay();
+✅    andMore();
+✅    return x;
+  } else {
+⛔    return x;
+}
+----
+|
+* ✅ Covered: 6
+* ⛔ Uncovered: 1
+* Line coverage: *86%*
+* JaCoCo measures this as *89%* instruction coverage
+|===
+
+== Lessons learned
+
+* C0 (LOC/instruction) coverage is a weak metric: it may change without underlying changes to the quality of tests.
+* Yet, in my practice, the vast majority of projects refer to this metric in order to determine their code coverage.
+* My hypothesis: *that's because it gives bigger values*.
+
+== C1 coverage: branch coverage
+
 
 [source,java]
 ----
@@ -78,11 +170,12 @@ boolean isLeapYear(int year) { ... }
 
 [cols="50a,50a"]
 |===
+|
 [plantuml, leapyear05, png]
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -135,7 +228,8 @@ stop
 |
 
 
-How many examples should we consider in order to reliably test this method? (Given that we *trust* the `%` operation)
+How many examples should we consider in order to reliably test this method? +
+(Given that we *trust* the `%` operation.)
 
 |===
 
@@ -143,11 +237,12 @@ How many examples should we consider in order to reliably test this method? (Giv
 
 [cols="50a,50a"]
 |===
+|
 [plantuml, leapyear15, png]
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -209,11 +304,12 @@ stop
 
 [cols="50a,50a"]
 |===
+|
 [plantuml, leapyear25, png]
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -276,11 +372,12 @@ stop
 
 [cols="50a,50a"]
 |===
+|
 [plantuml, leapyear35, png]
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -348,7 +445,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -409,7 +506,13 @@ stop
 |===
 
 
+== Lessons learned
 
+image::jacoco-branch-50.png[]
+
+* Branch coverage (С1) doesn't depend on the "length" of the branches -- every decision point brings equal weight to the calculation of %.
+* This leads to lower values of %, but this is actually healthier for the project (we'll get to it).
+* My advice: switch from measuring line/instruction coverage to branch coverage *now*.
 
 
 == Method under test: IsLeapYear
@@ -422,7 +525,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-
+skinparam dpi 135
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -485,7 +588,7 @@ execution paths: 4
 CC = E - N + 2 = 14 - 12 + 2 = 4
 
 
-All of them are 4, but it's just a coincidence!
+All of them are 4 for this method, but it's just a coincidence!
 
 |===
 
@@ -493,12 +596,23 @@ All of them are 4, but it's just a coincidence!
 == Adding extra statements to a branch does not contribute to CC…
 
 
-[cols="15a,15a,15a,55a"]
+[cols="15a,85a"]
 |===
 |
 [plantuml, a, png]
 ----
 @startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
 start
 :A;
 stop
@@ -506,9 +620,38 @@ stop
 ----
 |
 
+For a chain of statements without
+any decision points, CC = 1 no matter how long is the chain!!
+
+
+E - N + 2 = 2-3+2 = 1
+  
+(we add +1 edge and +1 node)
+
+|===
+
+== Adding extra statements to a branch does not contribute to CC…
+
+
+[cols="15a,85a"]
+|===
+|
+
 [plantuml, ab, png]
 ----
 @startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
 start
 :A;
 :B;
@@ -518,9 +661,40 @@ stop
 
 |
 
+For a chain of statements without
+any decision points, CC = 1 no matter how long is the chain!!
+
+
+E - N + 2 = 3-4+2=  1
+
+(we add +1 edge and +1 node)
+
+|===
+
+== Adding extra statements to a branch does not contribute to CC…
+
+
+[cols="15a,85a"]
+|===
+
+
+|
+
 [plantuml, abc, png]
 ----
 @startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
 start
 :A;
 :B;
@@ -534,8 +708,8 @@ For a chain of statements without
 any decision points, CC = 1 no matter how long is the chain!!
 
 
-E - N + 2 = 2-3+2 = 3-4+2= 4-5+2 = 1
-  
+E - N + 2 = 4-5+2 = 1
+
 (we add +1 edge and +1 node)
 
 |===
@@ -549,6 +723,18 @@ E - N + 2 = 2-3+2 = 3-4+2= 4-5+2 = 1
 [plantuml,twoifs,png]
 ----
 @startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
 start
 if (condition1) then (true)
 :A;
@@ -580,58 +766,12 @@ Mathematical facts: CC is
 
 |===
 
-
-
-
-== UK personal income tax calculator
-
-[plantuml,uktax,png]
-----
-@startuml
-start
-
-:tax = 0;
-:personalAllowance = 12570;
-
-if (adjustedNetIncome > 100000?) then (yes)
-  :reduction = (adjustedNetIncome - 100000) / 2;
-  :personalAllowance = max(0, 12570 - reduction);
-else (no)
-
-endif
-
-:taxableIncome = max(0, grossIncome - personalAllowance);
-
-if (taxableIncome <= 37700?) then (yes)
-  :tax = taxableIncome * 0.20;
-else (no)
-  :tax = 37700 * 0.20;
-  :remaining = taxableIncome - 37700;
-
-  if (taxableIncome <= 125140?) then (yes)
-    :tax = tax + remaining * 0.40;
-  else (no)
-    :tax = tax + (125140 - 37700) * 0.40;
-    :additionalPart = taxableIncome - 125140;
-    :tax = tax + additionalPart * 0.45;
-  endif
-endif
-
-:return tax;
-
-stop
-@enduml
-----
-
-== Estonian personal tax calculator
-
 == Cyclomatic Complexity metric
 
 * Introduced by Thomas J. McCabe in 1976.
-* It’s very easy to calculate for every programming language (only very basic lexical/syntax analysis is needed). On the other hand, estimation of actual possible paths of execution involves analysis of “possible” and “impossible”
-paths.
+* *It’s very easy to calculate for every programming language* (only very basic lexical/syntax analysis is needed). On the other hand, estimation of actual possible paths of execution involves analysis of “possible” and “impossible” paths.
 * It’s additive (we can calculate CC for a whole project).
-* It’s “roughly the number of unit tests needed” (but tests must cover different paths)
+* It’s “roughly the number of unit tests needed”.
 
 == What is an acceptable value for CC?
 * MCabe’s categorization of CC of a single procedure (1976 paper->Wikipedia):
@@ -642,10 +782,346 @@ paths.
 
 * My own categorization (Ivan Ponomarev, 2026):
 ** 1 - 15 OK
-** > 15 mess, if it's not generated code -- refactor 
+** > 15 mess, if it's not generated code -- refactor
+
+== Lessons learned
+
+* Cyclomatic complexity is a very easy to calculate metric, available for most languages.
+* Set up a gate for CC for no more than 15 per method in order to reduce bugs and surface problematic places in the code.
+
+== A fictitious country's income tax system
+
+* Untaxable yearly allowance is €10000.
+* However, if yearly income is more than €25000, each exceeding euro decreases the allowance by €0.5.
+* The 25% tax is taken from the taxable amount (income - allowance).
+* If taxable amount is more than €100000, the exceeding amount is taxed at 35%.
+
+[source,java]
+----
+long tax(long income) { ... }
+----
+
+== Let's test!
 
 
-== Code coverage is just a uni-dimensional projection +++<br/>+++of multidimensional picture
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+-[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#fdecea>>
+  note left: 🐞
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+
+|===
+
+
+== Let's test: 50% branch coverage
+
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax50,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#fff8b3>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+
+* Income: €12000, tax: €500 (no allowance deduction, no higher rate)
+
+|===
+
+
+== Let's test: 100% branch coverage
+
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax100,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
+  -[#1b5e20,bold]->
+else (no)
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#1b5e20,bold]->
+
+stop
+@enduml
+
+----
+|
+
+* Income: €12000, tax: €500 (no allowance deduction, no higher rate)
+
+* Income: €200000, tax: €60000 (allowance deduction, higher rate)
+
+* Are we done testing?
+
+
+|===
+
+
+== Missed execution path
+
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax_missed,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
+  -[#1b5e20,bold]->
+else (no)
+-[dashed]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+else (no)
+  -[dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35;
+  -[dashed]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#1b5e20,bold]->
+
+stop
+@enduml
+
+----
+|
+
+* Income: €30000, tax: €5625 (allowance deduction, no higher rate)
+
+
+|===
+
+== Logically impossible execution path
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax_impossible,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000;
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes)
+  -[dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction);
+  -[dashed]->
+else (no)
+-[bold]->
+endif
+-[bold]->
+:taxableIncome = max(0, income - allowance);
+-[bold]->
+if (taxableIncome <= €100000?) then (yes)
+  -[dashed]->
+  :tax = taxableIncome * 0.25;
+  -[dashed]->
+else (no)
+  -[bold]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35;
+  -[bold]->
+endif
+-[bold]->
+:return tax;
+-[bold]->
+
+stop
+@enduml
+
+----
+|
+
+* No allowance deduction + higher rate path is not logically possible: the income for higher rate is bigger than the income that requires allowance deduction
+
+* "Full execution path coverage" requires both path tracking + analysis of possible & impossible paths. Your ordinary code coverage tool doesn't do that.
+
+|===
+
+
+== Lessons learned
+
+* Full branch coverage (C1) does not imply full execution paths coverage (C2) and thus may oversee bugs.
+* C2 is difficult to measure and ordinary tools *do not measure C2*.
+
+== C0/C1 coverage is just a uni-dimensional projection +++<br/>+++of multidimensional picture
 
 [cols="50a,50a"]
 |===
@@ -656,7 +1132,7 @@ image::coverage-plot-01.svg[{image-80-width}]
 
 |===
 
-== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+== Low C0/C1 coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
 
 [cols="50a,50a"]
 |===
@@ -668,7 +1144,7 @@ image::coverage-plot-02.svg[{image-80-width}]
 |===
 
 
-== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+== Low C0/C1 coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
 
 [cols="50a,50a"]
 |===
@@ -679,7 +1155,7 @@ image::coverage-plot-03.svg[{image-80-width}]
 
 |===
 
-== Low code coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
+== Low C0/C1 coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
 
 [cols="50a,50a"]
 |===
@@ -690,7 +1166,7 @@ image::coverage-plot-04.svg[{image-80-width}]
 
 |===
 
-== Higher code coverage: percentages rise, +++<br/>+++but vast areas are untested
+== Higher C0/C1 coverage: percentages rise, +++<br/>+++but vast areas are untested
 
 [cols="50a,50a"]
 |===
@@ -702,7 +1178,7 @@ image::coverage-plot-05.svg[{image-80-width}]
 |===
 
 
-== Higher code coverage: percentages rise, +++<br/>+++but vast areas are untested
+== Higher C0/C1 coverage: percentages rise, +++<br/>+++but vast areas are untested
 
 [cols="50a,50a"]
 |===
@@ -713,7 +1189,7 @@ image::coverage-plot-06.svg[{image-80-width}]
 
 |===
 
-== When code coverage is high, adding new valuable tests +++<br/>+++does not contribute to the metric
+== When C0/C1 coverage is high, adding new valuable tests +++<br/>+++does not contribute to the metric
 
 [cols="50a,50a"]
 |===
@@ -728,9 +1204,67 @@ image::coverage-plot-07.svg[{image-80-width}]
 
 image::coverage-08.svg[{image-40-width}]
 
+== Lessons learned
+
+* Setting too high quality gate for "code coverage" does not make sense.
+* My suggestion: 75% is the maximum reasonable quality gate for branch coverage.
+
+== Code is covered, but nothing is tested
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+  public void doALotOfStuff(){
+✅  doSomething();
+✅  doSomethingElse();
+✅  doAnotherThing();
+✅  doYetAnotherThing();
+  }
+----
+
+[source,java]
+----
+@Test
+void uselessTest() {
+  doALotOfStuff();
+}
+----
+|
+* We have 100% C0/C1/C2 coverage, but removal of any of these lines (or adding more of them) will not affect the test result.
+* Measuring code coverage does not measure the ability of tests to actually detect faults!
+|===
+
+== Mutation testing (e.g. PITest for Java)
+
+* Takes tests and runs them against automatically modified (mutated)  versions of code
+* Mutated versions should fail the tests! If test indeed fails, it means that the mutation is *killed* (which is good), otherwise it means that the mutation is *survived* (which means that the test has a flaw!)
+* Examples of mutations:
+** Boolean subexpression -> constant `true` or `false`
+** `+` -> `-`,  `*` -> `/`, etc.
+** `>` -> `>=`, `==`, and `<=`, etc.
+** Variable -> another type compatible variable from the same scope
+** etc
+
+== Lessons learned
+* For mission-critical pieces of code, mutation testing provides high level of confidence, as it measures the quality of tests themselves.
+* Mutation coverage value <= code coverage value. If it’s hard to achieve high  code coverage, it’s even harder to achieve high mutation coverage.
+* Mutation testing is *slow*.
+* In real life, mutation testing is still considered to be impractical and is used quite rarely.
+
+== Conclusions
+
+* Do not use C0 "covered lines" metric, switch to C1 "covered branches" today. The numbers will be lower, but more honest.
+* Set up a maximum cyclomatic complexity of 15 per method for your codebase.
+* Do not set a vanity threshold of 80% or higher for your coverage metric quality gates. Relax it to 60..75%.
+* Watch the coverage report, not the metric. Identify the potentially problematic fragments and use methods such as fuzzing and/or mutation testing for critically important code.
+
 == Thanks for listening!
 
-Slides-as-code: https://github.com/inponomarev/dsl-antora-talk
+https://en.wikipedia.org/wiki/Goodhart%27s_law[Goodhart's Law]: "Every measure which becomes a target becomes a bad measure"
+
+Slides-as-code: https://github.com/inponomarev/coverage-talk
 
 icon:envelope[size=lg] ivan@synthesized.io
 
