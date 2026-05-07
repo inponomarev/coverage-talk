@@ -2002,7 +2002,7 @@ if (income > 25000) {                       // > → >=, 25000 → 25001
     long reduction = (income - 25000) / 2;  // 25000 → 25001
     allowance = Math.max(0, allowance - reduction);  // 25000 → 1
 }
-long taxableIncome = Math.max(0, income - allowance); //max → agrument, 0 → 1
+long taxableIncome = Math.max(0, income - allowance); //max → argument, 0 → 1
 if (taxableIncome <= 100000) {              // < → <=, 100000 → 100001
     tax = Math.round(taxableIncome * .25);
 } else {
