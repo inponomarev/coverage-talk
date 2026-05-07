@@ -39,25 +39,23 @@ Ivan Ponomarev
 
 * Team Lead at Synthesized.io (test data automation you can trust!)
 * Teaching CS and programming at universities
-* 
+
 |===
 
 
-== The magical “coverage” metric
+== The magical “code coverage” metric
 - “What’s the test/code coverage in your project?”
 - “We have very high, 80%..90% test coverage”
 - “We need to improve coverage!”
 - “Can you give us 100% test coverage?”
 
-== The magical “coverage” metric
+== The magical “code coverage” metric
 - “What’s the test/code coverage in your project?”
 - “We have very high, 80%..90% test coverage”
 - “We need to improve coverage!”
 - “Can you give us *100%* test coverage?”
 
-CAUTION: Because coverage is measured in %, it’s tempting
-to speculate about 100% as an “ideal goal”
-
+image::target.jpg[{image-30-width}]
 == Line coverage (C0)
 
 [source,java]
@@ -109,14 +107,21 @@ assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
 
 == Instruction Coverage (e. g. in JaCoCo)
 
-Instruction coverage provides information about the amount of code that has been executed or missed.
+*Instruction coverage* provides information about the number of instructions +
+that has been executed or missed.
 
-image::jacoco-instructions-2.png[]
-
+[cols="30a,70a"]
+|===
+|
 image::jacoco-instructions-1.png[]
+|
+image::jacoco-instructions-2.png[]
 
 * Independent of source formatting
 * Always available, even in absence of debug information/source code.
+
+|===
+
 
 == And yet!
 
@@ -125,7 +130,7 @@ image::jacoco-instructions-1.png[]
 |
 [source,java]
 ----
-✅logger.info("Calculating maxComponent2 for ({}, {})", x, y);
+✅logger.info("Calculating max component");
   if (x > y) {
 ✅    logger.info("x > y, so the maximum is x!");
 ✅    System.gc(); // because why not
@@ -145,25 +150,34 @@ image::jacoco-instructions-1.png[]
 
 == Lessons learned
 
+[cols="70a,30a"]
+|===
+|
 * C0 (LOC/instruction) coverage is a weak metric: it may change without underlying changes to the quality of tests.
 * Yet, in my practice, the vast majority of projects refer to this metric in order to determine their code coverage.
-* My hypothesis: *that's because it gives bigger values*.
+* My hypothesis: *that's because it gives higher %*.
+|
+image::meme-queue.webp[]
+|===
 
 == C1 coverage: branch coverage
 
+[cols="70a,30a"]
+|===
+|
+* Every year that is exactly divisible by four is a leap year,
+* except for years that are exactly  divisible by 100,
+* but these centurial years are leap years if they are exactly divisible by 400
 
 [source,java]
 ----
-/**
-Returns {@code true} if {@code year} is a leap year.
-
-Every year that is exactly divisible by four
-is a leap year, except for years that are exactly
-divisible by 100, but these centurial years are
-leap years if they are exactly divisible by 400.
-*/
 boolean isLeapYear(int year) { ... }
 ----
+
+|
+image::leap.jpg[]
+|===
+
 
 
 == Method under test: IsLeapYear
@@ -171,7 +185,7 @@ boolean isLeapYear(int year) { ... }
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear05, png]
+[plantuml, leapyear04, png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -188,22 +202,18 @@ skinparam activity {
 
 start
 -[#b71c1c,dashed]->
-
 :result = false; <<#fdecea>>
-
 -[#b71c1c,dashed]->
-
 if (year % 4 == 0?) then (yes) <<#fdecea>>
   -[#b71c1c,dashed]->
   if (year % 100 == 0?) then (yes) <<#fdecea>>
     -[#b71c1c,dashed]->
     if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
-      :result = true; <<#fdecea>>
+      :result = false; <<#fdecea>>
       -[#b71c1c,dashed]->
     else (no)
       -[#b71c1c,dashed]->
-
     endif
     -[#b71c1c,dashed]->
   else (no)
@@ -214,7 +224,6 @@ if (year % 4 == 0?) then (yes) <<#fdecea>>
   -[#b71c1c,dashed]->
 else (no)
   -[#b71c1c,dashed]->
-
 endif
 -[#b71c1c,dashed]->
 :return result; <<#fdecea>>
@@ -232,6 +241,104 @@ How many examples should we consider in order to reliably test this method? +
 (Given that we *trust* the `%` operation.)
 
 |===
+
+
+== IsLeapYear: Code instrumentation
+
+[cols="50a,50a"]
+|===
+|
+[plantuml, leapyear00, png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+
+}
+
+start
+-[#b71c1c,dashed]->
+
+:result = false; <<#fdecea>>
+
+-[#b71c1c,dashed]->
+
+if (year % 4 == 0?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes) <<#fdecea>>
+    -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+    :2; <<sendSignal>> <<#ffaaaa>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+
+else (no)
+  -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+
+:return result; <<#fdecea>>
+
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+----
+
+|
+
+[graphviz]
+----
+digraph G {
+  node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Code instrumentation: probes inserted at the end of each branch.
+* Hitting the probe means that all the preceding instructions have been executed.
+* Coverage information is in fact a *bit set*.
+
+|===
+
+
 
 == IsLeapYear: Branch coverage 25%
 
@@ -266,9 +373,13 @@ if (year % 4 == 0?) then (yes) <<#fff8b3>>
       -[#b71c1c,dashed]->
     if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
-      :result = true; <<#fdecea>>
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
       -[#b71c1c,dashed]->
     else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
       -[#b71c1c,dashed]->
     endif
     -[#b71c1c,dashed]->
@@ -276,11 +387,14 @@ if (year % 4 == 0?) then (yes) <<#fff8b3>>
     -[#b71c1c,dashed]->
     :result = true; <<#fdecea>>
     -[#b71c1c,dashed]->
+    :2; <<sendSignal>> <<#ffaaaa>>
+    -[#b71c1c,dashed]->
   endif
   -[#b71c1c,dashed]->
 else (no)
   -[#1b5e20,bold]->
-
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 
@@ -294,8 +408,28 @@ stop
 
 |
 
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * 2026 (non-divisible by 4) -- `false`
+* Branch coverage: 25%
 
 |===
 
@@ -333,9 +467,13 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
       -[#b71c1c,dashed]->
     if (year % 400 == 0?) then (yes) <<#fdecea>>
       -[#b71c1c,dashed]->
-      :result = true; <<#fdecea>>
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
       -[#b71c1c,dashed]->
     else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
       -[#b71c1c,dashed]->
     endif
     -[#b71c1c,dashed]->
@@ -343,11 +481,14 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
     -[#1b5e20,bold]->
     :result = true; <<#e8f5e9>>
     -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
   endif
   -[#1b5e20,bold]->
 else (no)
   -[#1b5e20,bold]->
-
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 
@@ -361,9 +502,30 @@ stop
 
 |
 
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * 2026 (non-divisible by 4) -- `false`
 * 2028 (divisible by 4, not centennial) -- `true`
+* 99% of all the years fall in two categories above.
+* Branch coverage: 50%
 
 |===
 
@@ -401,9 +563,13 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
     if (year % 400 == 0?) then (yes) <<#fff8b3>>
       -[#b71c1c,dashed]->
-      :result = true; <<#fdecea>>
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
       -[#b71c1c,dashed]->
     else (no)
+      -[#1b5e20,bold]->
+      :3; <<sendSignal>> <<#8fd48f>>
       -[#1b5e20,bold]->
     endif
     -[#1b5e20,bold]->
@@ -411,11 +577,14 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
     -[#1b5e20,bold]->
     :result = true; <<#e8f5e9>>
     -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
   endif
   -[#1b5e20,bold]->
 else (no)
   -[#1b5e20,bold]->
-
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 
@@ -429,10 +598,30 @@ stop
 
 |
 
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * 2026 (non-divisible by 4) -- `false`
 * 2028 (divisible by 4, not centennial) -- `true`
 * 2100 (centennial, but not divisible by 400) -- `false`
+* Only 1 year out 400, or 0.25% will fall into the remaining category. Yet the branch coverage is 75%.
 
 |===
 
@@ -469,9 +658,13 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
     if (year % 400 == 0?) then (yes) <<#e8f5e9>>
       -[#1b5e20,bold]->
-      :result = true; <<#e8f5e9>>
+      :result = false; <<#ff1010>>
+      -[#1b5e20,bold]->
+      :4; <<sendSignal>> <<#8fd48f>>
       -[#1b5e20,bold]->
     else (no)
+      -[#1b5e20,bold]->
+      :3; <<sendSignal>> <<#8fd48f>>
       -[#1b5e20,bold]->
     endif
     -[#1b5e20,bold]->
@@ -479,11 +672,14 @@ if (year % 4 == 0?) then (yes) <<#e8f5e9>>
     -[#1b5e20,bold]->
     :result = true; <<#e8f5e9>>
     -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
   endif
   -[#1b5e20,bold]->
 else (no)
   -[#1b5e20,bold]->
-
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 
@@ -497,11 +693,30 @@ stop
 
 |
 
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * 2026 (non-divisible by 4) -- `false`
 * 2028 (divisible by 4, not centennial) -- `true`
 * 2100 (centennial, but not divisible by 400) -- `false`
-* 2000 (centennial, divisible by 400) -- `true`
+* 2000 (centennial, divisible by 400) -- expected `true`, was `false`, *bug spotted*
 
 |===
 
@@ -511,11 +726,11 @@ stop
 image::jacoco-branch-50.png[]
 
 * Branch coverage (С1) doesn't depend on the "length" of the branches -- every decision point brings equal weight to the calculation of %.
-* This leads to lower values of %, but this is actually healthier for the project (we'll get to it).
+* This gives *more pessimistic %*, but this is actually healthier for the project (we'll get to it).
 * My advice: switch from measuring line/instruction coverage to branch coverage *now*.
 
 
-== Method under test: IsLeapYear
+== Graph metrics
 
 [cols="50a,50a"]
 |===
@@ -596,7 +811,7 @@ All of them are 4 for this method, but it's just a coincidence!
 == Adding extra statements to a branch does not contribute to CC…
 
 
-[cols="15a,85a"]
+[cols="30a,70a"]
 |===
 |
 [plantuml, a, png]
@@ -614,7 +829,9 @@ skinparam activity {
   DiamondBackgroundColor white
 }
 start
-:A;
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
 stop
 @enduml
 ----
@@ -624,17 +841,38 @@ For a chain of statements without
 any decision points, CC = 1 no matter how long is the chain!!
 
 
-E - N + 2 = 2-3+2 = 1
-  
-(we add +1 edge and +1 node)
+E - N + 2 = 2 - 3 + 2 = 1
+
 
 |===
 
 == Adding extra statements to a branch does not contribute to CC…
 
 
-[cols="15a,85a"]
+[cols="10a,10a,10a,70a"]
 |===
+|
+[plantuml, a, png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+start
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+stop
+@enduml
+----
 |
 
 [plantuml, ab, png]
@@ -653,33 +891,16 @@ skinparam activity {
 }
 
 start
-:A;
-:B;
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
 stop
 @enduml
 ----
 
 |
-
-For a chain of statements without
-any decision points, CC = 1 no matter how long is the chain!!
-
-
-E - N + 2 = 3-4+2=  1
-
-(we add +1 edge and +1 node)
-
-|===
-
-== Adding extra statements to a branch does not contribute to CC…
-
-
-[cols="15a,85a"]
-|===
-
-
-|
-
 [plantuml, abc, png]
 ----
 @startuml
@@ -696,9 +917,13 @@ skinparam activity {
 }
 
 start
-:A;
-:B;
-:C;
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
 stop
 @enduml
 ----
@@ -708,16 +933,120 @@ For a chain of statements without
 any decision points, CC = 1 no matter how long is the chain!!
 
 
-E - N + 2 = 4-5+2 = 1
+E - N + 2 = 2 - 3 + 2 = 3 - 4 + 2 = 4 - 5 + 2 =  1
 
 (we add +1 edge and +1 node)
 
 |===
+
+== …Adding “decision points” do contribute
+
+
+[cols="30a,70a"]
+|===
+|
+[plantuml,oneif,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+`if`, `while`, `for`, `switch` case, also all the
+boolean expressions with short-cutting (`&&`,
+`\|\|`) will add +1 to CC
+
+CC = E - N + 2 = 6 - 6 + 2 = 2
+
+
+|===
+
  
 == …Adding “decision points” do contribute
 
 
-[cols="50a,50a"]
+[cols="30a,70a"]
+|===
+|
+[plantuml,twoifs1,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+if (condition2) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:D; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+`if`, `while`, `for`, `switch` case, also all the
+boolean expressions with short-cutting (`&&`,
+`\|\|`) will add +1 to CC
+
+CC = E - N + 2 = 11 - 10 + 2 = 3
+
+|===
+
+== Mathematical fact (according to Wikipedia)
+
+
+[cols="30a,70a"]
 |===
 |
 [plantuml,twoifs,png]
@@ -736,33 +1065,40 @@ skinparam activity {
 }
 
 start
-if (condition1) then (true)
-:A;
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
 else (false)
-:B;
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
 endif
-
-if (condition2) then (true)
-:C;
+-[#1b5e20,bold]->
+if (condition2) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
 else (false)
-:D;
+-[#1b5e20,bold]->
+:D; <<#e8f5e9>>
+-[#1b5e20,bold]->
 endif
-
+-[#1b5e20,bold]->
 stop
 @enduml
 ----
 
 |
-`if`, `while`, `for`, `switch` case, also all the
-boolean expressions with short-cutting (`&&`,
-`\|\|`) will add +1 to CC
 
-CC = E-N+2=11-10+2 = 3
+Cyclomatic complexity +
+(3 in this case) is
 
-Mathematical facts: CC is
-
-* the upper bound for number of “branches” (2 in this case: AC, BD or AD, BC)
-* the lower bound for number of “paths” (4 in this case: AC, AD, BC, BD)
+* the *upper bound* for the number of test cases that are necessary to achieve a complete branch coverage +
+(2 in this case, e.g.: `AC`, `BD`)
+* the *lower bound* for the number of paths through the control-flow graph +
+(4 in this case: `AC`, `AD`, `BC`, `BD`)
 
 |===
 
@@ -774,15 +1110,15 @@ Mathematical facts: CC is
 * It’s “roughly the number of unit tests needed”.
 
 == What is an acceptable value for CC?
-* MCabe’s categorization of CC of a single procedure (1976 paper->Wikipedia):
+[%step]
+* MCabe’s categorization of CC of a single procedure (2008 PowerPoint deck->Wikipedia):
 ** 1 - 10: Simple procedure, little risk
 ** 11 - 20: More complex, moderate risk
 ** 21 - 50: Complex, high risk
 ** > 50: Untestable code, very high risk
-
 * My own categorization (Ivan Ponomarev, 2026):
 ** 1 - 15 OK
-** > 15 mess, if it's not generated code -- refactor
+** > 15 mess, if it's deterministically generated code -- refactor
 
 == Lessons learned
 
@@ -791,6 +1127,9 @@ Mathematical facts: CC is
 
 == A fictitious country's income tax system
 
+[cols="60a,40a"]
+|===
+|
 * Untaxable yearly allowance is €10000.
 * However, if yearly income is more than €25000, each exceeding euro decreases the allowance by €0.5.
 * The 25% tax is taken from the taxable amount (income - allowance).
@@ -800,6 +1139,13 @@ Mathematical facts: CC is
 ----
 long tax(long income) { ... }
 ----
+
+
+|
+
+image::tax.jpg[]
+|===
+
 
 == Let's test!
 
@@ -812,7 +1158,7 @@ long tax(long income) { ... }
 ----
 @startuml
 !pragma useVerticalIf on
-skinparam dpi 135
+skinparam dpi 100
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -840,7 +1186,6 @@ endif
 if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
   -[#b71c1c,dashed]->
   :tax = (income - €10000) * 0.25; <<#fdecea>>
-  note left: 🐞
   -[#b71c1c,dashed]->
 else (no)
   -[#b71c1c,dashed]->
@@ -862,6 +1207,184 @@ stop
 |===
 
 
+== The bug
+
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax_bug,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+-[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#ff1010>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+
+Wrong code:
+
+`(income - €10000) * 0.25`
+
+instead of
+
+`taxableIncome * 0.25`
+
+|===
+
+
+== Let's test: add instrumentation
+
+
+[cols="50a,50a"]
+|===
+|
+
+[plantuml,tax_instrumented,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :2; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :3; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :4; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+
+----
+|
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+|===
+
 == Let's test: 50% branch coverage
 
 
@@ -873,7 +1396,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-skinparam dpi 135
+skinparam dpi 100
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -892,21 +1415,29 @@ if (income > €25000?) then (yes) <<#fff8b3>>
   -[#b71c1c,dashed]->
   :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
   -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
 else (no)
--[#1b5e20,bold]->
+  -[#1b5e20,bold]->
+  :2; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
-:taxableIncome = max(0, income - allowance); <<#fdecea>>
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
 -[#1b5e20,bold]->
 if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
   -[#1b5e20,bold]->
-  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
   -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 else (no)
   -[#b71c1c,dashed]->
   :tax = €100000 * 0.25
   remaining = taxableIncome - €100000
   tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :4; <<sendSignal>> <<#ffaaaa>>
   -[#b71c1c,dashed]->
 endif
 -[#1b5e20,bold]->
@@ -918,6 +1449,48 @@ stop
 
 ----
 |
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * Income: €12000, tax: €500 (no allowance deduction, no higher rate)
 
@@ -935,7 +1508,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-skinparam dpi 135
+skinparam dpi 100
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -954,22 +1527,30 @@ if (income > €25000?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
   :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
   -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 else (no)
 -[#1b5e20,bold]->
+  :2; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 :taxableIncome = max(0, income - allowance); <<#e8f5e9>>
 -[#1b5e20,bold]->
 if (taxableIncome <= €100000?) then (yes) <<#e8f5e9>>
   -[#1b5e20,bold]->
-  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
   -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 else (no)
   -[#1b5e20,bold]->
   :tax = €100000 * 0.25
   remaining = taxableIncome - €100000
   tax = tax + remaining * 0.35; <<#e8f5e9>>
   -[#1b5e20,bold]->
+  :4; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 endif
 -[#1b5e20,bold]->
 :return tax; <<#e8f5e9>>
@@ -980,6 +1561,48 @@ stop
 
 ----
 |
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * Income: €12000, tax: €500 (no allowance deduction, no higher rate)
 
@@ -1002,7 +1625,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-skinparam dpi 135
+skinparam dpi 100
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -1021,21 +1644,29 @@ if (income > €25000?) then (yes) <<#fff8b3>>
   -[#1b5e20,bold]->
   :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
   -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
 else (no)
--[dashed]->
+  -[dashed]->
+  :2; <<sendSignal>>
+  -[dashed]->
 endif
 -[#1b5e20,bold]->
 :taxableIncome = max(0, income - allowance); <<#e8f5e9>>
 -[#1b5e20,bold]->
 if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
   -[#1b5e20,bold]->
-  :tax = taxableIncome * 0.25; <<#e8f5e9>>
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
   -[#1b5e20,bold]->
 else (no)
   -[dashed]->
   :tax = €100000 * 0.25
   remaining = taxableIncome - €100000
   tax = tax + remaining * 0.35;
+  -[dashed]->
+  :4; <<sendSignal>>
   -[dashed]->
 endif
 -[#1b5e20,bold]->
@@ -1048,7 +1679,50 @@ stop
 ----
 |
 
-* Income: €30000, tax: €5625 (allowance deduction, no higher rate)
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Income: €30000, expected tax: €5625 (allowance deduction, no higher rate)
+* Actual result: €5000 -- *bug spotted*
 
 
 |===
@@ -1063,7 +1737,7 @@ stop
 ----
 @startuml
 !pragma useVerticalIf on
-skinparam dpi 135
+skinparam dpi 100
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam activity {
@@ -1075,32 +1749,40 @@ skinparam activity {
 }
 
 start
--[#1b5e20,bold]->
-:tax = €0\nallowance = €10000;
--[#1b5e20,bold]->
-if (income > €25000?) then (yes)
+-[bold]->
+:tax = €0\nallowance = €10000; <<#cccccc>>
+-[bold]->
+if (income > €25000?) then (yes) <<#eeeeee>>
   -[dashed]->
   :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction);
   -[dashed]->
+  :1; <<sendSignal>>
+  -[dashed]->
 else (no)
--[bold]->
+  -[bold]->
+  :2; <<sendSignal>> <<#cccccc>>
+  -[bold]->
 endif
 -[bold]->
-:taxableIncome = max(0, income - allowance);
+:taxableIncome = max(0, income - allowance); <<#cccccc>>
 -[bold]->
-if (taxableIncome <= €100000?) then (yes)
+if (taxableIncome <= €100000?) then (yes) <<#eeeeee>>
   -[dashed]->
   :tax = taxableIncome * 0.25;
+  -[dashed]->
+  :3; <<sendSignal>>
   -[dashed]->
 else (no)
   -[bold]->
   :tax = €100000 * 0.25
   remaining = taxableIncome - €100000
-  tax = tax + remaining * 0.35;
+  tax = tax + remaining * 0.35; <<#cccccc>>
+  -[bold]->
+  :4; <<sendSignal>> <<#cccccc>>
   -[bold]->
 endif
 -[bold]->
-:return tax;
+:return tax; <<#cccccc>>
 -[bold]->
 
 stop
@@ -1108,6 +1790,48 @@ stop
 
 ----
 |
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#eeeeee">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
 
 * No allowance deduction + higher rate path is not logically possible: the income for higher rate is bigger than the income that requires allowance deduction
 
@@ -1232,7 +1956,7 @@ void uselessTest() {
 }
 ----
 |
-* We have 100% C0/C1/C2 coverage, but removal of any of these lines (or adding more of them) will not affect the test result.
+* We have 100% C0/C1/C2 coverage, CC = 1, but removal of any of these lines (or adding more of them) will not affect the test result.
 * Measuring code coverage does not measure the ability of tests to actually detect faults!
 |===
 
@@ -1240,16 +1964,70 @@ void uselessTest() {
 
 * Takes tests and runs them against automatically modified (mutated)  versions of code
 * Mutated versions should fail the tests! If test indeed fails, it means that the mutation is *killed* (which is good), otherwise it means that the mutation is *survived* (which means that the test has a flaw!)
-* Examples of mutations:
+
+
+==  Examples of mutations
+
+[cols="70a,30a"]
+|===
+|
+** Returning constants instead of a computed result
+** Removal of a method call
 ** Boolean subexpression -> constant `true` or `false`
 ** `+` -> `-`,  `*` -> `/`, etc.
 ** `>` -> `>=`, `==`, and `<=`, etc.
 ** Variable -> another type compatible variable from the same scope
 ** etc
+|
+image::mutation.jpg[]
+|===
+== Equivalent mutations
+
+If mutations are generated randomly, it's possible that mutated code will be semantically equivalent:
+
+* `a + b` -> `b + a`
+* `if (x > y) return x else return y` -> `if (x >= y) return x else return y`
+
+== Tax Calculator Mutation Coverage
+
+image::pitest-tax.png[]
+
+== Tax Calculator Mutation Coverage
+
+[source,java]
+----
+long tax;
+long allowance = 10000;                     // 10000 → 10001
+if (income > 25000) {                       // > → >=, 25000 → 25001
+    long reduction = (income - 25000) / 2;  // 25000 → 25001
+    allowance = Math.max(0, allowance - reduction);  // 25000 → 1
+}
+long taxableIncome = Math.max(0, income - allowance); //max → agrument, 0 → 1
+if (taxableIncome <= 100000) {              // < → <=, 100000 → 100001
+    tax = Math.round(taxableIncome * .25);
+} else {
+    tax = Math.round(100000 * .25);
+    long remaining = taxableIncome - 100000; //100000 → 100001
+    tax = tax + Math.round(remaining * .35);
+}
+return tax;
+----
+
+== What mutation tests tell us?
+
+* Test case for income below allowance worth adding, as well as tests for boundary values.
+* `> → >=` mutations are *equivalent mutations*, as tax value is continuous function, and these are *false positives*.
+
+== Practical problems
+
+* *SLOW* with real-life code (2 mins -> 40 mins).
+* *Equivalent mutations* give false-positive "deficiencies".
+
+Modern tools fight both of these problems, the fight goes on.
 
 == Lessons learned
 * For mission-critical pieces of code, mutation testing provides high level of confidence, as it measures the quality of tests themselves.
-* Mutation coverage value <= code coverage value. If it’s hard to achieve high  code coverage, it’s even harder to achieve high mutation coverage.
+* Mutation testing results should be taken with caution: false positives occur among genuine defects.
 * Mutation testing is *slow*.
 * In real life, mutation testing is still considered to be impractical and is used quite rarely.
 
