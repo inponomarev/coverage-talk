@@ -42,20 +42,22 @@ Ivan Ponomarev
 
 |===
 
-
 == The magical “code coverage” metric
+
 - “What’s the test/code coverage in your project?”
 - “We have very high, 80%..90% test coverage”
 - “We need to improve coverage!”
 - “Can you give us 100% test coverage?”
 
 == The magical “code coverage” metric
+
 - “What’s the test/code coverage in your project?”
 - “We have very high, 80%..90% test coverage”
 - “We need to improve coverage!”
 - “Can you give us *100%* test coverage?”
 
 image::target.jpg[{image-30-width}]
+
 == Line coverage (C0)
 
 [source,java]
@@ -78,7 +80,6 @@ assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
 * ⛔ Uncovered: 2
 * Line coverage: *50%*
 |===
-
 
 == Line coverage
 
@@ -121,7 +122,6 @@ image::jacoco-instructions-2.png[]
 * Always available, even in absence of debug information/source code.
 
 |===
-
 
 == And yet!
 
@@ -178,14 +178,12 @@ boolean isLeapYear(int year) { ... }
 image::leap.jpg[]
 |===
 
-
-
 == Method under test: IsLeapYear
 
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear04, png]
+[plantuml,leapyear04,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -242,13 +240,12 @@ How many examples should we consider in order to reliably test this method? +
 
 |===
 
-
 == IsLeapYear: Code instrumentation
 
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear00, png]
+[plantuml,leapyear00,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -311,7 +308,6 @@ stop
 ----
 
 |
-
 [graphviz]
 ----
 digraph G {
@@ -339,14 +335,12 @@ digraph G {
 
 |===
 
-
-
 == IsLeapYear: Branch coverage 25%
 
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear15, png]
+[plantuml,leapyear15,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -408,7 +402,6 @@ stop
 ----
 
 |
-
 [graphviz]
 ----
 digraph G {
@@ -434,13 +427,12 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == IsLeapYear: Branch coverage 50%
 
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear25, png]
+[plantuml,leapyear25,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -502,7 +494,6 @@ stop
 ----
 
 |
-
 [graphviz]
 ----
 digraph G {
@@ -530,13 +521,12 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == IsLeapYear: Branch coverage 75%
 
 [cols="50a,50a"]
 |===
 |
-[plantuml, leapyear35, png]
+[plantuml,leapyear35,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -598,7 +588,6 @@ stop
 ----
 
 |
-
 [graphviz]
 ----
 digraph G {
@@ -626,12 +615,11 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == IsLeapYear: Branch coverage 100%
 
 [cols="50a,50a"]
 |===
-[plantuml, leapyear45, png]
+[plantuml,leapyear45,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -693,7 +681,6 @@ stop
 ----
 
 |
-
 [graphviz]
 ----
 digraph G {
@@ -721,7 +708,6 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == Lessons learned
 
 image::jacoco-branch-50.png[]
@@ -730,14 +716,12 @@ image::jacoco-branch-50.png[]
 * This gives *more pessimistic %*, but this is actually healthier for the project (we'll get to it).
 * My advice: switch from measuring line/instruction coverage to branch coverage *now*.
 
-
 == Graph metrics
 
 [cols="50a,50a"]
 |===
 |
-
-[plantuml, leapyear95, png]
+[plantuml,leapyear95,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -808,14 +792,12 @@ All of them are 4 for this method, but it's just a coincidence!
 
 |===
 
-
 == Adding extra statements to a branch does not contribute to CC…
-
 
 [cols="30a,70a"]
 |===
 |
-[plantuml, a, png]
+[plantuml,a,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -849,11 +831,10 @@ E - N + 2 = 2 - 3 + 2 = 1
 
 == Adding extra statements to a branch does not contribute to CC…
 
-
 [cols="10a,10a,10a,70a"]
 |===
 |
-[plantuml, a, png]
+[plantuml,a,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -875,8 +856,7 @@ stop
 @enduml
 ----
 |
-
-[plantuml, ab, png]
+[plantuml,ab,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -902,7 +882,7 @@ stop
 ----
 
 |
-[plantuml, abc, png]
+[plantuml,abc,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -941,7 +921,6 @@ E - N + 2 = 2 - 3 + 2 = 3 - 4 + 2 = 4 - 5 + 2 =  1
 |===
 
 == …Adding “decision points” do contribute
-
 
 [cols="30a,70a"]
 |===
@@ -987,9 +966,7 @@ CC = E - N + 2 = 6 - 6 + 2 = 2
 
 |===
 
- 
 == …Adding “decision points” do contribute
-
 
 [cols="30a,70a"]
 |===
@@ -1045,7 +1022,6 @@ CC = E - N + 2 = 11 - 10 + 2 = 3
 |===
 
 == Mathematical fact (according to Wikipedia)
-
 
 [cols="30a,70a"]
 |===
@@ -1106,11 +1082,13 @@ Cyclomatic complexity +
 == Cyclomatic Complexity metric
 
 * Introduced by Thomas J. McCabe in 1976.
-* *It’s very easy to calculate for every programming language* (only very basic lexical/syntax analysis is needed). On the other hand, estimation of actual possible paths of execution involves analysis of “possible” and “impossible” paths.
+* *It’s very easy to calculate for every programming language* (only very basic lexical/syntax analysis is needed).
+On the other hand, estimation of actual possible paths of execution involves analysis of “possible” and “impossible” paths.
 * It’s additive (we can calculate CC for a whole project).
 * It’s “roughly the number of unit tests needed”.
 
 == What is an acceptable value for CC?
+
 [%step]
 * MCabe’s categorization of CC of a single procedure (2008 PowerPoint deck->Wikipedia):
 ** 1 - 10: Simple procedure, little risk
@@ -1147,14 +1125,11 @@ long tax(long income) { ... }
 image::tax.jpg[]
 |===
 
-
 == Let's test!
-
 
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax,png]
 ----
 @startuml
@@ -1207,14 +1182,11 @@ stop
 
 |===
 
-
 == The bug
-
 
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax_bug,png]
 ----
 @startuml
@@ -1275,14 +1247,11 @@ instead of
 
 |===
 
-
 == Let's test: add instrumentation
-
 
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax_instrumented,png]
 ----
 @startuml
@@ -1341,7 +1310,6 @@ stop
 
 ----
 |
-
 [graphviz]
 ----
 digraph G {
@@ -1388,11 +1356,9 @@ node [shape=plain fontname="Helvetica"];
 
 == Let's test: 50% branch coverage
 
-
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax50,png]
 ----
 @startuml
@@ -1450,7 +1416,6 @@ stop
 
 ----
 |
-
 [graphviz]
 ----
 digraph G {
@@ -1497,14 +1462,11 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == Let's test: 100% branch coverage
-
 
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax100,png]
 ----
 @startuml
@@ -1562,7 +1524,6 @@ stop
 
 ----
 |
-
 [graphviz]
 ----
 digraph G {
@@ -1614,14 +1575,11 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == Missed execution path
-
 
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax_missed,png]
 ----
 @startuml
@@ -1679,7 +1637,6 @@ stop
 
 ----
 |
-
 [graphviz]
 ----
 digraph G {
@@ -1733,7 +1690,6 @@ node [shape=plain fontname="Helvetica"];
 [cols="50a,50a"]
 |===
 |
-
 [plantuml,tax_impossible,png]
 ----
 @startuml
@@ -1791,7 +1747,6 @@ stop
 
 ----
 |
-
 [graphviz]
 ----
 digraph G {
@@ -1840,7 +1795,6 @@ node [shape=plain fontname="Helvetica"];
 
 |===
 
-
 == Lessons learned
 
 * Full branch coverage (C1) does not imply full execution paths coverage (C2) and thus may oversee bugs.
@@ -1867,7 +1821,6 @@ image::coverage-02.svg[{image-80-width}]
 image::coverage-plot-02.svg[{image-80-width}]
 
 |===
-
 
 == Low C0/C1 coverage: increase of code coverage +++<br/>+++reflects the increase of tests quality
 
@@ -1902,7 +1855,6 @@ image::coverage-plot-05.svg[{image-80-width}]
 
 |===
 
-
 == Higher C0/C1 coverage: percentages rise, +++<br/>+++but vast areas are untested
 
 [cols="50a,50a"]
@@ -1925,15 +1877,25 @@ image::coverage-plot-07.svg[{image-80-width}]
 
 |===
 
+== Interim conclusion
+
+Code coverage is a useful test-quality signal only at low levels.
+
+Beyond the saturation point, much more path coverage +
+produces only tiny gains in line or branch coverage.
+
+image::saturation-curve.svg[{image-40-width}]
+
 == Artificial 100% coverage: difficult to achieve, +++<br/>+++but not related to quality
 
 image::coverage-08.svg[{image-40-width}]
 
 == Lessons learned
 
-* Does coverage growth indicate test quality growth? -- Yes, but only when coverage is relatively low, I suppose below 75%.
-* Setting too high threshold for "code coverage" does not facilitate the real improvement of the codebase.
-* My suggestion: 75% is the maximum reasonable quality gate for *branch coverage*.
+[%step]
+* Setting an overly high code coverage threshold does not lead to real codebase improvement.
+* My suggestion: 75% is the highest reasonable quality gate for branch coverage.
+* Measure unit test and integration test coverage separately, and set separate quality gates for each. Instead of an inflated “combined coverage” number, you get a more accurate picture.
 
 == Code is covered, but nothing is tested
 
@@ -1964,9 +1926,9 @@ void uselessTest() {
 
 == Mutation testing (e.g. PITest for Java)
 
-* Takes tests and runs them against automatically modified (mutated)  versions of code
-* Mutated versions should fail the tests! If test indeed fails, it means that the mutation is *killed* (which is good), otherwise it means that the mutation is *survived* (which means that the test has a flaw!)
-
+* Takes tests and runs them against automatically modified (mutated) versions of code
+* Mutated versions should fail the tests!
+If test indeed fails, it means that the mutation is *killed* (which is good), otherwise it means that the mutation is *survived* (which means that the test has a flaw!)
 
 ==  Examples of mutations
 
@@ -1983,6 +1945,7 @@ void uselessTest() {
 |
 image::mutation.jpg[]
 |===
+
 == Equivalent mutations
 
 If mutations are generated randomly, it's possible that mutated code will be semantically equivalent:
@@ -2028,6 +1991,7 @@ return tax;
 Modern tools fight both of these problems, the fight goes on (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSDEM 2024)
 
 == Lessons learned
+
 * For mission-critical pieces of code, mutation testing provides high level of confidence, as it measures the quality of tests themselves.
 * Mutation testing results should be taken with caution: false positives occur among genuine defects.
 * Mutation testing is *slow*.
@@ -2043,8 +2007,11 @@ In the modern world, both code and tests are cheap, and code coverage metric is 
 * Stop using the C0 “covered lines” metric. *Switch to C1 branch coverage today.* The numbers will be lower, but more honest.
 * Set a *maximum cyclomatic complexity of 15* per method across your codebase.
 * Avoid vanity coverage thresholds of 80% or higher. A practical target is *60–75%*.
-* Look at the *coverage report, not just the metric*. Find potentially risky fragments and apply techniques such as fuzzing and/or mutation testing to critical code.
-* Keep an eye on modern tooling. Practical tools for C2 and mutation coverage are improving, but there is still more to come.
+* Measure unit test and integration test coverage *separately*, and set separate quality gates for each.
+* Look at the *coverage report, not just the metric*.
+Find potentially risky fragments and apply techniques such as fuzzing and/or mutation testing to critical code.
+* Keep an eye on modern tooling.
+Practical tools for C2 and mutation coverage are improving, but there is still more to come.
 
 == Thanks for listening!
 
