@@ -335,6 +335,7 @@ digraph G {
 * Code instrumentation: probes inserted at the end of each branch.
 * Hitting the probe means that all the preceding instructions have been executed.
 * Coverage information is in fact a *bit set*.
+* See details in https://jugspeakers.info/en/information/talks/talk/632[Evgeny Mandrikov, Marc Hoffmann.  Java Code Coverage mechanics], Joker 2017.
 
 |===
 
@@ -1608,7 +1609,7 @@ node [shape=plain fontname="Helvetica"];
 
 * Income: €200000, tax: €60000 (allowance deduction, higher rate)
 
-* Are we done testing?
+* Branch coverage 100%, are we done testing?
 
 
 |===
@@ -1930,8 +1931,9 @@ image::coverage-08.svg[{image-40-width}]
 
 == Lessons learned
 
-* Setting too high quality gate for "code coverage" does not make sense.
-* My suggestion: 75% is the maximum reasonable quality gate for branch coverage.
+* Does coverage growth indicate test quality growth? -- Yes, but only when coverage is relatively low, I suppose below 75%.
+* Setting too high threshold for "code coverage" does not facilitate the real improvement of the codebase.
+* My suggestion: 75% is the maximum reasonable quality gate for *branch coverage*.
 
 == Code is covered, but nothing is tested
 
@@ -2013,17 +2015,17 @@ if (taxableIncome <= 100000) {              // < → <=, 100000 → 100001
 return tax;
 ----
 
-== What mutation tests tell us?
+== What do mutation tests tell us?
 
 * Test case for income below allowance worth adding, as well as tests for boundary values.
-* `> → >=` mutations are *equivalent mutations*, as tax value is continuous function, and these are *false positives*.
+* `> → >=` mutations are *equivalent mutations*, as tax value is a continuous function, and these are *false positives*.
 
 == Practical problems
 
 * *SLOW* with real-life code (2 mins -> 40 mins).
 * *Equivalent mutations* give false-positive "deficiencies".
 
-Modern tools fight both of these problems, the fight goes on.
+Modern tools fight both of these problems, the fight goes on (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSEM 2024)
 
 == Lessons learned
 * For mission-critical pieces of code, mutation testing provides high level of confidence, as it measures the quality of tests themselves.
@@ -2033,10 +2035,16 @@ Modern tools fight both of these problems, the fight goes on.
 
 == Conclusions
 
-* Do not use C0 "covered lines" metric, switch to C1 "covered branches" today. The numbers will be lower, but more honest.
-* Set up a maximum cyclomatic complexity of 15 per method for your codebase.
-* Do not set a vanity threshold of 80% or higher for your coverage metric quality gates. Relax it to 60..75%.
-* Watch the coverage report, not the metric. Identify the potentially problematic fragments and use methods such as fuzzing and/or mutation testing for critically important code.
+In the modern world, both code and tests are cheap, and code coverage metric is inflated and depreciated. *Make it more valuable calculating it precisely, and dismiss high and meaningless values*.
+
+== My opinionated practical advice
+
+[%step]
+* Stop using the C0 “covered lines” metric. *Switch to C1 branch coverage today.* The numbers will be lower, but more honest.
+* Set a *maximum cyclomatic complexity of 15* per method across your codebase.
+* Avoid vanity coverage thresholds of 80% or higher. A practical target is *60–75%*.
+* Look at the *coverage report, not just the metric*. Find potentially risky fragments and apply techniques such as fuzzing and/or mutation testing to critical code.
+* Keep an eye on modern tooling. Practical tools for C2 and mutation coverage are improving, but there is still more to come.
 
 == Thanks for listening!
 
