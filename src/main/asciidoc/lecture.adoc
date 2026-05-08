@@ -2025,7 +2025,7 @@ return tax;
 * *SLOW* with real-life code (2 mins -> 40 mins).
 * *Equivalent mutations* give false-positive "deficiencies".
 
-Modern tools fight both of these problems, the fight goes on (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSEM 2024)
+Modern tools fight both of these problems, the fight goes on (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSDEM 2024)
 
 == Lessons learned
 * For mission-critical pieces of code, mutation testing provides high level of confidence, as it measures the quality of tests themselves.
