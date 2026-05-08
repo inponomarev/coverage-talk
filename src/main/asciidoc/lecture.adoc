@@ -153,9 +153,9 @@ image::jacoco-instructions-2.png[]
 [cols="70a,30a"]
 |===
 |
-* C0 (LOC/instruction) coverage is a weak metric: it may change without underlying changes to the quality of tests.
-* Yet, in my practice, the vast majority of projects refer to this metric in order to determine their code coverage.
-* My hypothesis: *that's because it gives higher %*.
+* C0 (LOC/instruction) coverage is a weak metric: it can change without any real improvement in test quality.
+* Yet in practice, most projects still use this metric as their primary definition of code coverage.
+* My hypothesis: *because it produces higher percentages*.
 |
 image::meme-queue.webp[]
 |===
@@ -1889,6 +1889,36 @@ image::saturation-curve.svg[{image-40-width}]
 == Artificial 100% coverage: difficult to achieve, +++<br/>+++but not related to quality
 
 image::coverage-08.svg[{image-40-width}]
+
+== Coverage-tuned code
+
+[cols="50a,50a"]
+|===
+|
+* 25% coverage
+
+[source,java]
+----
+  switch (v) {
+✅  case A -> doA();
+⛔  case B -> doB();
+⛔  case C -> doC();
+⛔  case D -> doD();
+  }
+----
+|
+* 100% coverage
+
+[source,java]
+----
+✅ Map.<Value, Runnable>of(
+    Value.A, this::doA,
+    Value.B, this::doB,
+    Value.C, this::doC,
+    Value.D, this::doD).get(v).run();
+----
+|===
+
 
 == Lessons learned
 
