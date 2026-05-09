@@ -1106,12 +1106,13 @@ On the other hand, estimation of actual possible paths of execution involves ana
 
 == A fictitious country's income tax system
 
-[cols="60a,40a"]
+[cols="55a,45a"]
 |===
 |
 * Untaxable yearly allowance is €10000.
 * However, if yearly income is more than €25000, each exceeding euro decreases the allowance by €0.5.
-* The 25% tax is taken from the taxable amount (income - allowance).
+* The 25% tax is taken from the taxable amount +
+(income - allowance).
 * If taxable amount is more than €100000, the exceeding amount is taxed at 35%.
 
 [source,java]
@@ -1119,10 +1120,9 @@ On the other hand, estimation of actual possible paths of execution involves ana
 long tax(long income) { ... }
 ----
 
-
 |
 
-image::tax.jpg[]
+image::tax.jpg[{image-110-width}]
 |===
 
 == Let's test!
@@ -1962,7 +1962,7 @@ If test indeed fails, it means that the mutation is *killed* (which is good), ot
 
 ==  Examples of mutations
 
-[cols="70a,30a"]
+[cols="65a,35a"]
 |===
 |
 ** Returning constants instead of a computed result
@@ -1973,7 +1973,7 @@ If test indeed fails, it means that the mutation is *killed* (which is good), ot
 ** Variable -> another type compatible variable from the same scope
 ** etc
 |
-image::mutation.jpg[]
+image::mutation.svg[]
 |===
 
 == Equivalent mutations
@@ -2049,7 +2049,7 @@ Practical tools for C2 and mutation coverage are improving, but there is still *
 
 == Thanks for listening!
 
-https://en.wikipedia.org/wiki/Goodhart%27s_law[Goodhart's Law]: "Every measure which becomes a target becomes a bad measure"
+https://en.wikipedia.org/wiki/Goodhart%27s_law[Charles Goodhart's Law]: "Every measure which becomes a target becomes a bad measure"
 
 Slides-as-code: https://github.com/inponomarev/coverage-talk
 
