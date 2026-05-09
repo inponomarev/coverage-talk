@@ -150,19 +150,19 @@ image::jacoco-instructions-2.png[]
 
 == Lessons learned
 
-[cols="70a,30a"]
+[cols="60a,40a"]
 |===
 |
 * C0 (LOC/instruction) coverage is a weak metric: it can change without any real improvement in test quality.
 * Yet in practice, most projects still use this metric as their primary definition of code coverage.
 * My hypothesis: *because it produces higher percentages*.
 |
-image::meme-queue.webp[]
+image::meme-queue.webp[{image-110-width}]
 |===
 
 == C1 coverage: branch coverage
 
-[cols="70a,30a"]
+[cols="60a,40a"]
 |===
 |
 * Every year that is exactly divisible by four is a leap year,
@@ -2029,7 +2029,11 @@ Modern tools fight both of these problems, the fight goes on (see, for example, 
 
 == Conclusions
 
-In the modern world, both code and tests are cheap, and code coverage metric is inflated and depreciated. *Make it more valuable calculating it precisely, and dismiss high and meaningless values*.
+* In the modern world, both *code and tests are cheap*, +
+and code coverage metric is *inflated and devalued*.
+
+* Make it meaningful again: calculate it precisely, +
+and reject high but meaningless numbers.
 
 == My opinionated practical advice
 
@@ -2040,8 +2044,8 @@ In the modern world, both code and tests are cheap, and code coverage metric is 
 * Measure unit test and integration test coverage *separately*, and set separate quality gates for each.
 * Look at the *coverage report, not just the metric*.
 Find potentially risky fragments and apply techniques such as fuzzing and/or mutation testing to critical code.
-* Keep an eye on modern tooling.
-Practical tools for C2 and mutation coverage are improving, but there is still more to come.
+* Keep an eye on *modern tooling*.
+Practical tools for C2 and mutation coverage are improving, but there is still *more to come*.
 
 == Thanks for listening!
 
