@@ -27,20 +27,10 @@ include::_doc_general_attributes.adoc[]
 //== Часть 1. Введение
 :!figure-caption:
 
-[%notitle]
-== Who am I
+== The Problem
 
-[cols="30a,70a"]
-|===
-|image::ivan.jpg[]
-|
-
-Ivan Ponomarev
-
-* Team Lead at Synthesized.io (test data automation you can trust!)
-* Teaching CS and programming at universities
-
-|===
+* In the modern world, both *code and tests are cheap*
+* We need a way to measure the quality of our tests.
 
 == The magical “code coverage” metric
 
@@ -57,6 +47,22 @@ Ivan Ponomarev
 - “Can you give us *100%* test coverage?”
 
 image::target.jpg[{image-30-width}]
+
+[%notitle]
+== Who am I
+
+[cols="30a,70a"]
+|===
+|image::ivan.jpg[]
+|
+
+Ivan Ponomarev
+
+* Team Lead at Synthesized.io (test data automation you can trust!)
+* Teaching CS and programming at universities
+
+|===
+
 
 == Line coverage (C0)
 
@@ -1884,7 +1890,7 @@ Code coverage is a useful test-quality signal only at low levels.
 Beyond the saturation point, much more path coverage +
 produces only tiny gains in line or branch coverage.
 
-image::saturation-curve.svg[{image-40-width}]
+image::saturation-curve.svg[{image-30-width}]
 
 == Artificial 100% coverage: difficult to achieve, +++<br/>+++but not related to quality
 
@@ -2018,7 +2024,8 @@ return tax;
 * *SLOW* with real-life code (2 mins -> 40 mins).
 * *Equivalent mutations* give false-positive "deficiencies".
 
-Modern tools fight both of these problems, the fight goes on (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSDEM 2024)
+Modern tools fight both of these problems, the fight goes on +
+(see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSDEM 2024)
 
 == Lessons learned
 
