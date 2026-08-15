@@ -20,7 +20,7 @@
         <asciidoctor.maven.plugin.version>3.2.0</asciidoctor.maven.plugin.version>
         <asciidoctorj.version>2.5.12</asciidoctorj.version>
         <asciidoctorj.diagram.version>3.2.1</asciidoctorj.diagram.version>
-        <jruby.version>9.4.6.0</jruby.version>
+        <jruby.version>10.1.1.0</jruby.version>
         <revealjs.version>3.9.2</revealjs.version>
         <!-- Use 'master' as version and remove the 'v' prefixing the download url to use the current snapshot version  -->
         <asciidoctor-revealjs.version>master</asciidoctor-revealjs.version>
