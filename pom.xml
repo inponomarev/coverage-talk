@@ -25,7 +25,7 @@
         <!-- Use 'master' as version and remove the 'v' prefixing the download url to use the current snapshot version  -->
         <asciidoctor-revealjs.version>master</asciidoctor-revealjs.version>
         <jacoco.version>0.8.12</jacoco.version>
-        <pitest.version>1.17.4</pitest.version>
+        <pitest.version>1.25.9</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
     </properties>
     
