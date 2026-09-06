@@ -228,6 +228,17 @@
                             <outputFile>index.html</outputFile>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-heisenbug-slides</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDocumentName>hb2026.adoc</sourceDocumentName>
+                            <outputFile>hb2026.html</outputFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

@@ -1,0 +1,2074 @@
+= Красивые цифры, +++<br/>+++или+++<br/>+++Что мы измеряем на самом деле, когда измеряем покрытие
+Иван Пономарёв
+:revealjs_theme: black
+:revealjs_customtheme: white_course.css
+:revealjs_slideNumber:
+:revealjs_history:
+:revealjs_progress:
+:encoding: UTF-8
+:lang: ru
+include::_doc_general_attributes.adoc[]
+:doctype: article
+:toclevels: 3
+:imagesdir: images
+:source-highlighter: highlightjs
+:highlightjsdir: highlight
+:icons: font
+:iconfont-remote!:
+:iconfont-name: font-awesome-4.7.0/css/font-awesome
+:revealjs_mouseWheel: true
+:revealjs_center: false
+:revealjs_transition: none
+:revealjs_width: 1600
+:revealjs_height: 900
+:stem: latexmath
+:customcss: coverage.css
+
+//== Часть 1. Введение
+:!figure-caption:
+
+== В чём проблема
+
+[quote,Linus Torvalds in 2000]
+"Talk is cheap. Show me the code"
+
+* Сегодня и *код, и тесты обходятся дёшево*
+* Нам нужен способ оценивать качество тестов.
+
+== Магическая метрика «покрытие кода»
+
+[none]
+- — Какое у вас покрытие кода тестами?
+- — У нас очень высокое покрытие: 80–90%
+- — Надо поднять покрытие!
+- — Можете сделать нам 100% покрытия?
+
+== Магическая метрика «покрытие кода»
+
+[none]
+- — Какое у вас покрытие кода тестами?
+- — У нас очень высокое покрытие: 80–90%
+- — Надо поднять покрытие!
+- — Можете сделать нам 100% покрытия?
+
+image::target.jpg[{image-30-width}]
+
+[%notitle]
+== Обо мне
+
+[cols="30a,70a"]
+|===
+|image::ivan.jpg[]
+|
+
+Иван Пономарёв
+
+* Тимлид в Synthesized.io (автоматизация тестовых данных, которой можно доверять!)
+* Преподаю CS и программирование в университетах
+
+|===
+
+
+== Покрытие строк (C0)
+
+[source,java]
+----
+assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
+----
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅if (x > y)
+✅   return x;
+⛔else
+⛔   return x;
+----
+|
+* ✅ Покрыто: 2
+* ⛔ Не покрыто: 2
+* Покрытие строк: *50%*
+|===
+
+== Покрытие строк
+
+[source,java]
+----
+assertThat(new Pair(3, 2).maxComponent()).isEqualTo(3);
+----
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅if (x > y) {
+✅   return
+✅          this
+✅          .
+✅          x;
+⛔} else { return x;}
+----
+|
+* ✅ Покрыто: 5
+* ⛔ Не покрыто: 1
+* Покрытие строк: *83%*
+|===
+
+== Покрытие инструкций (например, в JaCoCo)
+
+*Покрытие инструкций* показывает, сколько инструкций +
+было выполнено, а сколько — нет.
+
+[cols="30a,70a"]
+|===
+|
+image::jacoco-instructions-1.png[]
+|
+image::jacoco-instructions-2.png[]
+
+* Не зависит от форматирования исходного кода
+* Доступно даже без отладочной информации и исходного кода.
+
+|===
+
+== И всё-таки!
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+✅logger.info("Calculating max component");
+  if (x > y) {
+✅    logger.info("x > y, so the maximum is x!");
+✅    System.gc(); // because why not
+✅    ohByTheWay();
+✅    andMore();
+✅    return x;
+  } else {
+⛔    return x;
+}
+----
+|
+* ✅ Покрыто: 6
+* ⛔ Не покрыто: 1
+* Покрытие строк: *86%*
+* JaCoCo показывает здесь *89%* покрытия инструкций
+|===
+
+== Какие выводы?
+
+[cols="60a,40a"]
+|===
+|
+* Покрытие C0 (строк или инструкций) — слабая метрика: оно может меняться без реального улучшения качества тестов.
+* Но на практике в большинстве проектов под покрытием кода до сих пор понимают именно эту метрику.
+* Моя гипотеза: *потому что так проценты выше*.
+|
+image::meme-queue.webp[{image-110-width}]
+|===
+
+== Покрытие C1: покрытие ветвей
+
+[cols="60a,40a"]
+|===
+|
+* Год високосный, если делится на 4 без остатка,
+* кроме годов, которые делятся на 100,
+* но если год делится на 400, он всё-таки високосный
+
+[source,java]
+----
+boolean isLeapYear(int year) { ... }
+----
+
+|
+image::leap.jpg[]
+|===
+
+== Тестируемый метод: IsLeapYear
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear04,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:result = false; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (year % 4 == 0?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes) <<#fdecea>>
+    -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return result; <<#fdecea>>
+
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+----
+
+|
+
+
+Сколько примеров нужно, чтобы надёжно протестировать этот метод? +
+(При условии, что операции `%` мы *доверяем*.)
+
+|===
+
+== IsLeapYear: инструментирование кода
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear00,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+
+}
+
+start
+-[#b71c1c,dashed]->
+
+:result = false; <<#fdecea>>
+
+-[#b71c1c,dashed]->
+
+if (year % 4 == 0?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes) <<#fdecea>>
+    -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+    :2; <<sendSignal>> <<#ffaaaa>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+
+else (no)
+  -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+
+:return result; <<#fdecea>>
+
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+----
+
+|
+[graphviz]
+----
+digraph G {
+  node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Инструментирование кода: в конец каждой ветви вставляем зонд (probe).
+* Срабатывание зонда означает, что все предшествующие инструкции этой ветви выполнены.
+* Данные о покрытии — это, по сути, *битовый набор*.
+* Подробнее: https://jugspeakers.info/en/information/talks/talk/632[Евгений Мандриков, Марк Хоффманн. Java Code Coverage mechanics], Joker 2017.
+
+|===
+
+== IsLeapYear: покрытие ветвей 25%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear15,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes) <<#fff8b3>>
+  -[#b71c1c,dashed]->
+  if (year % 100 == 0?) then (yes)  <<#fdecea>>
+      -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#b71c1c,dashed]->
+    :result = true; <<#fdecea>>
+    -[#b71c1c,dashed]->
+    :2; <<sendSignal>> <<#ffaaaa>>
+    -[#b71c1c,dashed]->
+  endif
+  -[#b71c1c,dashed]->
+else (no)
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* 2026 (не делится на 4) — `false`
+* Покрытие ветвей: 25%
+
+|===
+
+== IsLeapYear: покрытие ветвей 50%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear25,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  if (year % 100 == 0?) then (yes) <<#fff8b3>>
+      -[#b71c1c,dashed]->
+    if (year % 400 == 0?) then (yes) <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#b71c1c,dashed]->
+      :3; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    endif
+    -[#b71c1c,dashed]->
+  else (no)
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* 2026 (не делится на 4) — `false`
+* 2028 (делится на 4, но не на 100) — `true`
+* 99% всех годов попадают в эти две категории.
+* Покрытие ветвей: 50%
+
+|===
+
+== IsLeapYear: покрытие ветвей 75%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear35,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    if (year % 400 == 0?) then (yes) <<#fff8b3>>
+      -[#b71c1c,dashed]->
+      :result = false; <<#fdecea>>
+      -[#b71c1c,dashed]->
+      :4; <<sendSignal>> <<#ffaaaa>>
+      -[#b71c1c,dashed]->
+    else (no)
+      -[#1b5e20,bold]->
+      :3; <<sendSignal>> <<#8fd48f>>
+      -[#1b5e20,bold]->
+    endif
+    -[#1b5e20,bold]->
+  else (no)
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* 2026 (не делится на 4) — `false`
+* 2028 (делится на 4, но не на 100) — `true`
+* 2100 (делится на 100, но не на 400) — `false`
+* В оставшуюся категорию попадает лишь 1 год из 400, то есть 0,25%. А покрытие ветвей — 75%.
+
+|===
+
+== IsLeapYear: покрытие ветвей 100%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,leapyear45,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    if (year % 400 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+      :result = false; <<#ff1010>>
+      -[#1b5e20,bold]->
+      :4; <<sendSignal>> <<#8fd48f>>
+      -[#1b5e20,bold]->
+    else (no)
+      -[#1b5e20,bold]->
+      :3; <<sendSignal>> <<#8fd48f>>
+      -[#1b5e20,bold]->
+    endif
+    -[#1b5e20,bold]->
+  else (no)
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
+    :2; <<sendSignal>> <<#8fd48f>>
+    -[#1b5e20,bold]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* 2026 (не делится на 4) — `false`
+* 2028 (делится на 4, но не на 100) — `true`
+* 2100 (делится на 100, но не на 400) — `false`
+* 2000 (делится на 400) — ожидали `true`, получили `false`: *нашли баг*
+
+|===
+
+== Какие выводы?
+
+image::jacoco-branch-50.png[]
+
+* Покрытие ветвей (C1) не зависит от их «длины»: каждая точка ветвления имеет одинаковый вес при расчёте процента.
+* Проценты получаются *более пессимистичными*, но для проекта это полезнее (скоро разберём почему).
+* Мой совет: переходите с покрытия строк и инструкций на покрытие ветвей *прямо сейчас*.
+
+== Метрики графа
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+
+:result = false; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+if (year % 4 == 0?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  if (year % 100 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    if (year % 400 == 0?) then (yes) <<#e8f5e9>>
+      -[#1b5e20,bold]->
+      :result = true; <<#e8f5e9>>
+      -[#1b5e20,bold]->
+    else (no)
+      -[#1b5e20,bold]->
+    endif
+    -[#1b5e20,bold]->
+  else (no)
+    -[#1b5e20,bold]->
+    :result = true; <<#e8f5e9>>
+    -[#1b5e20,bold]->
+  endif
+  -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+
+endif
+-[#1b5e20,bold]->
+
+:return result; <<#e8f5e9>>
+
+-[#1b5e20,bold]->
+
+stop
+@enduml
+----
+
+|
+
+* *Число ветвей*: число
+путей выполнения, необходимых для покрытия всех
+рёбер: 4
+
+* *Число путей*: число всех возможных
+путей выполнения: 4
+
+* *Цикломатическая сложность* +
+CC = E - N + 2 = 14 - 12 + 2 = 4
+
+
+Для этого метода все три числа равны 4, но это лишь совпадение!
+
+|===
+
+== Дополнительные инструкции в ветви не увеличивают CC…
+
+[cols="30a,70a"]
+|===
+|
+[plantuml,a,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+start
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+|
+
+Для цепочки инструкций без
+ветвлений CC = 1 при любой длине цепочки!
+
+
+E - N + 2 = 2 - 3 + 2 = 1
+
+
+|===
+
+== Дополнительные инструкции в ветви не увеличивают CC…
+
+[cols="10a,10a,10a,70a"]
+|===
+|
+[plantuml,,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+start
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+|
+[plantuml,,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+[plantuml,,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+|
+
+Для цепочки инструкций без
+ветвлений CC = 1 при любой длине цепочки!
+
+
+E - N + 2 = 2 - 3 + 2 = 3 - 4 + 2 = 4 - 5 + 2 =  1
+
+(добавляем одно ребро и одну вершину)
+
+|===
+
+== …А точки ветвления — увеличивают
+
+[cols="30a,70a"]
+|===
+|
+[plantuml,oneif,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+`if`, `while`, `for`, ветви `case` в `switch`, а также
+логические операторы с сокращённым вычислением (`&&`,
+`\|\|`) добавляют по единице к CC
+
+CC = E - N + 2 = 6 - 6 + 2 = 2
+
+
+|===
+
+== …А точки ветвления — увеличивают
+
+[cols="30a,70a"]
+|===
+|
+[plantuml,twoifs1,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+if (condition2) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:D; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+`if`, `while`, `for`, ветви `case` в `switch`, а также
+логические операторы с сокращённым вычислением (`&&`,
+`\|\|`) добавляют по единице к CC
+
+CC = E - N + 2 = 11 - 10 + 2 = 3
+
+|===
+
+== Математический факт (согласно Википедии)
+
+[cols="30a,70a"]
+|===
+|
+[plantuml,twoifs,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 135
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+if (condition1) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:A; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:B; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+if (condition2) then (true) <<#e8f5e9>>
+-[#1b5e20,bold]->
+:C; <<#e8f5e9>>
+-[#1b5e20,bold]->
+else (false)
+-[#1b5e20,bold]->
+:D; <<#e8f5e9>>
+-[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+stop
+@enduml
+----
+
+|
+
+Цикломатическая сложность +
+(здесь — 3) — это
+
+* *верхняя граница* числа тестовых случаев, необходимых для полного покрытия ветвей +
+(здесь — 2, например: `AC`, `BD`)
+* *нижняя граница* числа путей в графе потока управления +
+(здесь — 4: `AC`, `AD`, `BC`, `BD`)
+
+|===
+
+== Метрика «цикломатическая сложность»
+
+* Предложена Томасом Маккейбом в 1976 году.
+* *Очень легко вычисляется для любого языка программирования*: достаточно простейшего лексического и синтаксического анализа.
+А вот для подсчёта реальных путей выполнения нужно различать возможные и невозможные пути.
+* Аддитивна: можно посчитать CC всего проекта.
+* Это «примерно столько, сколько нужно юнит-тестов».
+
+== Какое значение CC допустимо?
+
+[%step]
+* Классификация Маккейба для одной процедуры (слайды 2008 года → Википедия):
+** 1–10: простая процедура, низкий риск
+** 11–20: более сложная, умеренный риск
+** 21–50: сложная, высокий риск
+** > 50: нетестируемый код, очень высокий риск
+* Моя классификация (Иван Пономарёв, 2026):
+** 1–15: нормально
+** > 15: бардак; если код не сгенерирован детерминированно — рефакторить
+
+== Какие выводы?
+
+* Цикломатическая сложность легко вычисляется и доступна для большинства языков.
+* Установите ограничение CC ≤ 15 на метод: это поможет сократить число багов и выявить проблемные места в коде.
+
+== Подоходный налог в вымышленной стране
+
+[cols="55a,45a"]
+|===
+|
+* Необлагаемый минимум — €10000 в год.
+* Но при годовом доходе свыше €25000 каждый евро превышения уменьшает необлагаемый минимум на €0,5.
+* С облагаемой суммы взимается налог 25% +
+(доход минус необлагаемый минимум).
+* Если облагаемая сумма превышает €100000, с превышения взимается 35%.
+
+[source,java]
+----
+long tax(long income) { ... }
+----
+
+|
+
+image::tax.jpg[{image-110-width}]
+|===
+
+== Давайте тестировать!
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+-[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+
+|===
+
+== Баг
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax_bug,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+else (no)
+-[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#ff1010>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+
+Ошибочный код:
+
+`(income - €10000) * 0.25`
+
+вместо
+
+`taxableIncome * 0.25`
+
+|===
+
+== Тестируем: добавим инструментирование
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax_instrumented,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#b71c1c,dashed]->
+:tax = €0\nallowance = €10000; <<#fdecea>>
+-[#b71c1c,dashed]->
+if (income > €25000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :2; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:taxableIncome = max(0, income - allowance); <<#fdecea>>
+-[#b71c1c,dashed]->
+if (taxableIncome <= €100000?) then (yes) <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :tax = (income - €10000) * 0.25; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :3; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :4; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#b71c1c,dashed]->
+:return tax; <<#fdecea>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+
+----
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+|===
+
+== Тестируем: покрытие ветвей 50%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax50,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#fff8b3>>
+  -[#b71c1c,dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :1; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+else (no)
+  -[#1b5e20,bold]->
+  :2; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+else (no)
+  -[#b71c1c,dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#fdecea>>
+  -[#b71c1c,dashed]->
+  :4; <<sendSignal>> <<#ffaaaa>>
+  -[#b71c1c,dashed]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#b71c1c,dashed]->
+
+stop
+@enduml
+
+----
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Доход: €12000, налог: €500 (минимум не уменьшается, повышенная ставка не применяется)
+
+|===
+
+== Тестируем: покрытие ветвей 100%
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax100,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+else (no)
+-[#1b5e20,bold]->
+  :2; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+else (no)
+  -[#1b5e20,bold]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :4; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#1b5e20,bold]->
+
+stop
+@enduml
+
+----
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Доход: €12000, налог: €500 (минимум не уменьшается, повышенная ставка не применяется)
+
+* Доход: €200000, налог: €60000 (минимум уменьшается, повышенная ставка применяется)
+
+* Покрытие ветвей 100% — тестирование закончено?
+
+
+|===
+
+== Пропущенный путь выполнения
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax_missed,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[#1b5e20,bold]->
+:tax = €0\nallowance = €10000; <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (income > €25000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction); <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :1; <<sendSignal>> <<#8fd48f>>
+   -[#1b5e20,bold]->
+else (no)
+  -[dashed]->
+  :2; <<sendSignal>>
+  -[dashed]->
+endif
+-[#1b5e20,bold]->
+:taxableIncome = max(0, income - allowance); <<#e8f5e9>>
+-[#1b5e20,bold]->
+if (taxableIncome <= €100000?) then (yes) <<#fff8b3>>
+  -[#1b5e20,bold]->
+  :tax = (income - €10000) * 0.25; <<#e8f5e9>>
+  -[#1b5e20,bold]->
+  :3; <<sendSignal>> <<#8fd48f>>
+  -[#1b5e20,bold]->
+else (no)
+  -[dashed]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35;
+  -[dashed]->
+  :4; <<sendSignal>>
+  -[dashed]->
+endif
+-[#1b5e20,bold]->
+:return tax; <<#e8f5e9>>
+-[#1b5e20,bold]->
+
+stop
+@enduml
+
+----
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#fdecea">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Доход: €30000, ожидаемый налог: €5625 (минимум уменьшается, повышенная ставка не применяется)
+* Фактический результат: €5000 — *нашли баг*
+
+
+|===
+
+== Логически невозможный путь выполнения
+
+[cols="50a,50a"]
+|===
+|
+[plantuml,tax_impossible,png]
+----
+@startuml
+!pragma useVerticalIf on
+skinparam dpi 100
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  FontSize 16
+  BorderColor #333333
+  BackgroundColor white
+  DiamondBorderColor #333333
+  DiamondBackgroundColor white
+}
+
+start
+-[bold]->
+:tax = €0\nallowance = €10000; <<#cccccc>>
+-[bold]->
+if (income > €25000?) then (yes) <<#eeeeee>>
+  -[dashed]->
+  :reduction = (income - €25000) / 2\nallowance = max(0, allowance - reduction);
+  -[dashed]->
+  :1; <<sendSignal>>
+  -[dashed]->
+else (no)
+  -[bold]->
+  :2; <<sendSignal>> <<#cccccc>>
+  -[bold]->
+endif
+-[bold]->
+:taxableIncome = max(0, income - allowance); <<#cccccc>>
+-[bold]->
+if (taxableIncome <= €100000?) then (yes) <<#eeeeee>>
+  -[dashed]->
+  :tax = taxableIncome * 0.25;
+  -[dashed]->
+  :3; <<sendSignal>>
+  -[dashed]->
+else (no)
+  -[bold]->
+  :tax = €100000 * 0.25
+  remaining = taxableIncome - €100000
+  tax = tax + remaining * 0.35; <<#cccccc>>
+  -[bold]->
+  :4; <<sendSignal>> <<#cccccc>>
+  -[bold]->
+endif
+-[bold]->
+:return tax; <<#cccccc>>
+-[bold]->
+
+stop
+@enduml
+
+----
+|
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+[graphviz]
+----
+digraph G {
+node [shape=plain fontname="Helvetica"];
+
+  array [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="16">
+        <TR>
+          <TD CELLBORDER="0">C2</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">2 3</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#8fd48f">1 4</TD>
+          <TD WIDTH="40" HEIGHT="40" BGCOLOR="#eeeeee">2 4</TD>
+        </TR>
+      </TABLE>
+    >
+  ];
+}
+----
+
+* Путь «минимум не уменьшается, но повышенная ставка применяется» невозможен: порог повышенной ставки выше порога уменьшения минимума.
+
+* Для полного покрытия путей выполнения нужно отслеживать пути и анализировать, какие из них возможны. Обычный инструмент измерения покрытия этого не делает.
+
+|===
+
+== Какие выводы?
+
+* Полное покрытие ветвей (C1) не означает полного покрытия путей выполнения (C2): баги могут остаться незамеченными.
+* C2 сложно измерить, и обычные инструменты *его не измеряют*.
+
+== Покрытие C0/C1 — лишь одномерная проекция +++<br/>+++многомерной картины
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-01.svg[{image-80-width}]
+|
+image::coverage-plot-01.svg[{image-80-width}]
+
+|===
+
+== При низком C0/C1 рост покрытия +++<br/>+++отражает рост качества тестов
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-02.svg[{image-80-width}]
+|
+image::coverage-plot-02.svg[{image-80-width}]
+
+|===
+
+== При низком C0/C1 рост покрытия +++<br/>+++отражает рост качества тестов
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-03.svg[{image-80-width}]
+|
+image::coverage-plot-03.svg[{image-80-width}]
+
+|===
+
+== При низком C0/C1 рост покрытия +++<br/>+++отражает рост качества тестов
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-04.svg[{image-80-width}]
+|
+image::coverage-plot-04.svg[{image-80-width}]
+
+|===
+
+== При высоком C0/C1 проценты растут, +++<br/>+++но большие области остаются непроверенными
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-05.svg[{image-80-width}]
+|
+image::coverage-plot-05.svg[{image-80-width}]
+
+|===
+
+== При высоком C0/C1 проценты растут, +++<br/>+++но большие области остаются непроверенными
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-06.svg[{image-80-width}]
+|
+image::coverage-plot-06.svg[{image-80-width}]
+
+|===
+
+== При высоком C0/C1 новые полезные тесты +++<br/>+++уже не увеличивают метрику
+
+[cols="50a,50a"]
+|===
+|
+image::coverage-07.svg[{image-80-width}]
+|
+image::coverage-plot-07.svg[{image-80-width}]
+
+|===
+
+== Промежуточный вывод
+
+Покрытие кода полезно как показатель качества тестов лишь при низких значениях.
+
+После точки насыщения существенный рост покрытия путей +
+даёт лишь небольшой прирост покрытия строк или ветвей.
+
+image::saturation-curve.svg[{image-30-width}]
+
+== Искусственные 100% покрытия: сложно достичь, +++<br/>+++но с качеством это не связано
+
+image::coverage-08.svg[{image-40-width}]
+
+== Код, подогнанный под покрытие
+
+[cols="50a,50a"]
+|===
+|
+* Покрытие 25%
+
+[source,java]
+----
+  switch (v) {
+✅  case A -> doA();
+⛔  case B -> doB();
+⛔  case C -> doC();
+⛔  case D -> doD();
+  }
+----
+|
+* Покрытие 100%
+
+[source,java]
+----
+✅ Map.<Value, Runnable>of(
+    Value.A, this::doA,
+    Value.B, this::doB,
+    Value.C, this::doC,
+    Value.D, this::doD).get(v).run();
+----
+|===
+
+
+== Какие выводы?
+
+[%step]
+* Завышенный порог покрытия не приводит к реальному улучшению кодовой базы.
+* Мой вариант: 75% — наибольший разумный порог для покрытия ветвей.
+* Измеряйте покрытие юнит-тестами и интеграционными тестами отдельно, с отдельными порогами. Так картина будет точнее, чем с завышенным «общим покрытием».
+
+== Код покрыт, но ничего не проверено
+
+[cols="50a,50a"]
+|===
+|
+[source,java]
+----
+  public void doALotOfStuff(){
+✅  doSomething();
+✅  doSomethingElse();
+✅  doAnotherThing();
+✅  doYetAnotherThing();
+  }
+----
+
+[source,java]
+----
+@Test
+void uselessTest() {
+  doALotOfStuff();
+}
+----
+|
+* У нас 100% покрытия C0/C1/C2 и CC = 1, но удаление любой из этих строк (или добавление новых) не повлияет на результат теста.
+* Покрытие кода не измеряет способность тестов обнаруживать ошибки!
+|===
+
+== Мутационное тестирование (например, PITest для Java)
+
+* Запускаем тесты на автоматически изменённых (мутировавших) версиях кода
+* На изменённом коде тесты должны падать!
+Если тест упал — мутант *убит* (это хорошо). Если нет — мутант *выжил* (значит, в тесте есть изъян!).
+
+== Примеры мутаций
+
+[cols="65a,35a"]
+|===
+|
+** Возврат константы вместо вычисленного результата
+** Удаление вызова метода
+** Логическое подвыражение → константа `true` или `false`
+** `+` → `-`, `*` → `/` и т. д.
+** `>` → `>=`, `==`, `<=` и т. д.
+** Переменная → другая переменная совместимого типа из той же области видимости
+** И так далее
+|
+image::mutation.svg[]
+|===
+
+== Эквивалентные мутации
+
+При случайной генерации мутаций изменённый код может оказаться семантически эквивалентным исходному:
+
+* `a + b` -> `b + a`
+* `if (x > y) return x else return y` -> `if (x >= y) return x else return y`
+
+== Мутационное покрытие налогового калькулятора
+
+image::pitest-tax.png[]
+
+== Мутационное покрытие налогового калькулятора
+
+[source,java]
+----
+long tax;
+long allowance = 10000;                     // 10000 → 10001
+if (income > 25000) {                       // > → >=, 25000 → 25001
+    long reduction = (income - 25000) / 2;  // 25000 → 25001
+    allowance = Math.max(0, allowance - reduction);  // 25000 → 1
+}
+long taxableIncome = Math.max(0, income - allowance); //max → argument, 0 → 1
+if (taxableIncome <= 100000) {              // < → <=, 100000 → 100001
+    tax = Math.round(taxableIncome * .25);
+} else {
+    tax = Math.round(100000 * .25);
+    long remaining = taxableIncome - 100000; //100000 → 100001
+    tax = tax + Math.round(remaining * .35);
+}
+return tax;
+----
+
+== Что нам показало мутационное тестирование?
+
+* Стоит добавить тест для дохода ниже необлагаемого минимума, а также тесты на граничные значения.
+* Мутации `> → >=` — *эквивалентные*: сумма налога — непрерывная функция. Это *ложные срабатывания*.
+
+== Практические проблемы
+
+* На реальном коде *МЕДЛЕННО*: 2 минуты → 40 минут.
+* *Эквивалентные мутации* дают ложные сообщения о «недостатках» тестов.
+
+Современные инструменты борются с обеими проблемами. Борьба продолжается +
+(см., например, https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical], FOSDEM 2024)
+
+== Какие выводы?
+
+* Для критически важного кода мутационное тестирование даёт высокую уверенность: оно оценивает качество самих тестов.
+* Результаты нужно интерпретировать осторожно: среди реальных проблем встречаются ложные срабатывания.
+* Мутационное тестирование — это *медленно*.
+* На практике его всё ещё считают непрактичным и применяют довольно редко.
+
+== Итоги
+
+* Сегодня и *код, и тесты обходятся дёшево*, +
+а метрика покрытия кода *раздута и обесценена*.
+
+* Вернём ей смысл: будем измерять осмысленно +
+и откажемся от высоких, но бессмысленных цифр.
+
+== Мои практические рекомендации
+
+[%step]
+* Откажитесь от C0 — покрытия строк. *Переходите на C1 — покрытие ветвей — уже сегодня.* Проценты будут ниже, но честнее.
+* Ограничьте *цикломатическую сложность значением 15* на метод во всём проекте.
+* Не гонитесь за красивыми порогами покрытия от 80% и выше. Практичный ориентир — *60–75%*.
+* Измеряйте покрытие юнит-тестами и интеграционными тестами *отдельно*, с отдельными порогами.
+* Смотрите на *отчёт о покрытии, а не только на процент*.
+Ищите потенциально опасные участки; для критичного кода применяйте фаззинг и/или мутационное тестирование.
+* Следите за *современными инструментами*.
+Инструменты для C2 и мутационного покрытия развиваются, но *многое ещё впереди*.
+
+== Спасибо за внимание!
+
+https://en.wikipedia.org/wiki/Goodhart%27s_law[Закон Гудхарта]: «Когда показатель становится целью, +
+он перестаёт быть хорошим показателем»
+
+{nbsp}
+
+Исходники слайдов: https://github.com/inponomarev/coverage-talk
+
+icon:envelope[size=lg] ivan@synthesized.io
+
+icon:twitter[size=lg] @inponomarev
