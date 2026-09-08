@@ -1931,6 +1931,13 @@ image::coverage-08.svg[{image-40-width}]
 ----
 |===
 
+== Хороший пример: делегирование в стандартную библиотеку
+
+image::good_example.jpg[]
+
+== Хороший пример: удаление кода
+
+image::review.webp[]
 
 == Какие выводы?
 
@@ -2030,8 +2037,9 @@ return tax;
 * На реальном коде *МЕДЛЕННО*: 2 минуты → 40 минут.
 * *Эквивалентные мутации* дают ложные сообщения о «недостатках» тестов.
 
-Современные инструменты борются с обеими проблемами. Борьба продолжается +
+* Современные инструменты борются с обеими проблемами. Борьба продолжается +
 (см., например, https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical], FOSDEM 2024)
+* Вы сами можете внести вклад: https://github.com/jacoco/jacoco/issues/2190[JaCoCo #2190: Boundary-value coverage: flag numeric comparisons whose boundary (left == right) is never tested]
 
 == Какие выводы?
 
