@@ -625,6 +625,7 @@ node [shape=plain fontname="Helvetica"];
 
 [cols="50a,50a"]
 |===
+|
 [plantuml,leapyear45,png]
 ----
 @startuml
@@ -727,7 +728,7 @@ image::jacoco-branch-50.png[]
 [cols="50a,50a"]
 |===
 |
-[plantuml,leapyear95,png]
+[plantuml,,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -803,7 +804,7 @@ All of them are 4 for this method, but it's just a coincidence!
 [cols="30a,70a"]
 |===
 |
-[plantuml,a,png]
+[plantuml,,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -840,7 +841,7 @@ E - N + 2 = 2 - 3 + 2 = 1
 [cols="10a,10a,10a,70a"]
 |===
 |
-[plantuml,a,png]
+[plantuml,,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -862,7 +863,7 @@ stop
 @enduml
 ----
 |
-[plantuml,ab,png]
+[plantuml,,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -888,7 +889,7 @@ stop
 ----
 
 |
-[plantuml,abc,png]
+[plantuml,,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -1103,7 +1104,7 @@ On the other hand, estimation of actual possible paths of execution involves ana
 ** > 50: Untestable code, very high risk
 * My own categorization (Ivan Ponomarev, 2026):
 ** 1 - 15 OK
-** > 15 mess, if it's deterministically generated code -- refactor
+** > 15 mess, unless it's deterministically generated code -- refactor
 
 == Lessons learned
 
