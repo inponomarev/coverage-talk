@@ -124,3 +124,9 @@ Kester
 Mandrikov
 Stryker
 Runnable
+PMD
+Pylint
+TIOBE
+analyzers
+detekt
+lintr
