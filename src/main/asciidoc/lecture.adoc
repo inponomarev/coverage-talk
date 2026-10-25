@@ -1033,7 +1033,7 @@ CC = E - N + 2 = 11 - 10 + 2 = 3
 [cols="30a,70a"]
 |===
 |
-[plantuml,twoifs,png]
+[plantuml,twoifs1,png]
 ----
 @startuml
 !pragma useVerticalIf on
@@ -1105,6 +1105,36 @@ On the other hand, estimation of actual possible paths of execution involves ana
 * My own categorization (Ivan Ponomarev, 2026):
 ** 1 - 15 OK
 ** > 15 mess, unless it's deterministically generated code -- refactor
+
+== CC measurement tools for the major languages
+
+++++
+<style>
+table.complexity {
+  font-size: 1.0em;
+}
+table.complexity p {
+  font-size: inherit;
+}
+</style>
+++++
+
+[.complexity]
+[cols="7a,20a,24a,7a,42a"]
+|===
+|TIOBE | Language | Tool 2.+| Maximum allowed value (default)
+^.|1 | Python | Pylint | *10* | https://pylint.pycqa.org/en/latest/user_guide/checkers/extensions.html
+^.|2 | C      |Lizard  | *15* | https://github.com/terryyin/lizard
+^.|3 | C++    | Lizard | *15* | https://github.com/terryyin/lizard
+^.|4 | Java   |Checkstyle | *10* | https://checkstyle.org/checks/metrics/cyclomaticcomplexity.html
+^.|5 | C#     |Microsoft .NET analyzers | *25* | https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1502
+^.|6 | JavaScript / Typescript  | ESLint | *20* | https://eslint.org/docs/latest/rules/complexity
+^.|7 | Visual Basic .NET | Microsoft .NET analyzers | *25* | https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1502
+^.|8 | SQL (Oracle PL/SQL) | PMD | *9* | https://pmd.github.io/pmd/pmd_rules_plsql_design.html#cyclomaticcomplexity
+^.|9 | R       | lintr | *15* | https://lintr.r-lib.org/reference/cyclocomp_linter.html
+^.|10 | Rust   | Lizard | *15* | https://github.com/terryyin/lizard
+^.|26 | Kotlin | detekt | *14* | https://detekt.dev/docs/1.23.8/rules/complexity/
+|===
 
 == Lessons learned
 
@@ -1926,6 +1956,13 @@ image::coverage-08.svg[{image-40-width}]
 ----
 |===
 
+== A good example: delegating to the standard library
+
+image::good_example.jpg[]
+
+== A good example: deleting code
+
+image::review.webp[]
 
 == Lessons learned
 
@@ -1990,11 +2027,11 @@ If mutations are generated randomly, it's possible that mutated code will be sem
 * `a + b` -> `b + a`
 * `if (x > y) return x else return y` -> `if (x >= y) return x else return y`
 
-== Tax Calculator Mutation Coverage
+== Tax Calculator +++<br/>+++Mutation Testing Report
 
 image::pitest-tax.png[]
 
-== Tax Calculator Mutation Coverage
+== Tax Calculator +++<br/>+++Mutation Testing Report
 
 [source,java]
 ----
@@ -2025,8 +2062,9 @@ return tax;
 * *SLOW* with real-life code (2 mins -> 40 mins).
 * *Equivalent mutations* give false-positive "deficiencies".
 
-Modern tools fight both of these problems, the fight goes on +
+* Modern tools fight both of these problems, the fight goes on +
 (see, for example, "https://archive.fosdem.org/2024/schedule/event/fosdem-2024-2486-how-mutation-testing-got-practical/[Jan-Jelle Kester. Stryker: How mutation testing got practical]", FOSDEM 2024)
+* You can contribute yourself: https://github.com/jacoco/jacoco/issues/2190[JaCoCo #2190: Boundary-value coverage: flag numeric comparisons whose boundary (left == right) is never tested]
 
 == Lessons learned
 
